@@ -13,7 +13,7 @@
 		"issues" : "https://github.com/exface/BarcodeScanner/issues"
 	},
 	"require" : {
-		"exface/core" : ">=1.0",
+		"exface/core" : "~0.1",
 		"bower-asset/quagga": ">=0.11",
 		"npm-asset/jquery.numpad" : ">=1"
 	}

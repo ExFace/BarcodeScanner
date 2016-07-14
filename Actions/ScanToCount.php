@@ -113,7 +113,7 @@ class ScanToCount extends AbstractScanAction {
 					
 				}
 				
-				$(document)." . ($this->get_app()->exface()->ui()->get_template_from_request() instanceof  \exface\JQueryMobileTemplate\Template\jQueryMobile ? "on('pageshow', '#" . $table->get_jqm_page_id() . "'," : "ready(" ) . " function(){
+				$(document)." . ($this->get_app()->get_workbench()->ui()->get_template_from_request() instanceof  \exface\JQueryMobileTemplate\Template\jQueryMobile ? "on('pageshow', '#" . $table->get_jqm_page_id() . "'," : "ready(" ) . " function(){
 						$(document).scannerDetection({
 							timeBeforeScanTest: 200,
 							scanButtonLongPressThreshold: " . $this->get_detect_longpress_after_sequential_scans() . ",

@@ -41,7 +41,7 @@ class AbstractScanAction extends CustomTemplateScript {
 	
 	protected function get_js_camera_init(){
 		$result = '';
-		$button = $this->get_app()->exface()->ui()->get_template()->get_element($this->get_called_by_widget());
+		$button = $this->get_app()->get_workbench()->ui()->get_template()->get_element($this->get_called_by_widget());
 		$readers = explode(',', $this->get_use_camera_barcode_types());
 		for($i=0; $i<count($readers); $i++){
 			$readers[$i] = trim($readers[$i]) . '_reader';

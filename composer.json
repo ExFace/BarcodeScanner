@@ -15,6 +15,6 @@
 	"require" : {
 		"exface/core" : "~0.1",
 		"bower-asset/quagga": ">=0.11",
-		"npm-asset/jquery.numpad" : ">=1"
+		"bower-asset/jquery.numpad" : "~1.4"
 	}
 }

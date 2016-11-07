@@ -17,7 +17,7 @@ class ScanToQuickSearch extends AbstractScanAction {
 				{$table->get_id()}_table.row(0).nodes().to$().trigger(e);
 			";
 		}
-		$output = $this->get_js_camera_init() . "
+		$output = $this->build_js_camera_init() . "
 				$(document)." . $document_event . " function(){
 					$(document).scannerDetection({
 							timeBeforeScanTest: 200,

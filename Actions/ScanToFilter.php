@@ -15,7 +15,7 @@ class ScanToFilter extends AbstractScanAction {
 							startChar: [120],
 							ignoreIfFocusOn: 'input',
 							onComplete:	function(barcode, qty){ 
-								" . $this->get_app()->get_workbench()->ui()->get_template()->get_element_by_widget_id($this->get_filter_id(), $this->get_called_by_widget()->get_page()->get_id())->get_js_value_setter('barcode') . "; 
+								" . $this->get_app()->get_workbench()->ui()->get_template()->get_element_by_widget_id($this->get_filter_id(), $this->get_called_by_widget()->get_page()->get_id())->build_js_value_setter('barcode') . "; 
 								$('#{$table->get_id()}').one('draw.dt', function(){ 
 									if ({$table->get_id()}_table.rows()[0].length === 1){
 										{$table->get_id()}_table.row(0).nodes().to$().trigger('taphold'); 

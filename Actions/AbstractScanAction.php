@@ -39,7 +39,7 @@ class AbstractScanAction extends CustomTemplateScript {
 		return $this;
 	}  
 	
-	protected function get_js_camera_init(){
+	protected function build_js_camera_init(){
 		$result = '';
 		$button = $this->get_app()->get_workbench()->ui()->get_template()->get_element($this->get_called_by_widget());
 		$readers = explode(',', $this->get_use_camera_barcode_types());
@@ -115,11 +115,11 @@ $(function() {
         decode: function(src) {
             var self = this,
                 config = $.extend({}, self.state, {src: src});
-			{$button->get_js_busy_icon_show()}
+			{$button->build_js_busy_icon_show()}
             setTimeout(function() {
-			    {$button->get_js_busy_icon_hide()}
+			    {$button->build_js_busy_icon_hide()}
 			}, 5000);
-            Quagga.decodeSingle(config, function(result) { $(document).scannerDetection(result.codeResult.code); {$button->get_js_busy_icon_hide()}});
+            Quagga.decodeSingle(config, function(result) { $(document).scannerDetection(result.codeResult.code); {$button->build_js_busy_icon_hide()}});
         },
         setState: function(path, value) {
             var self = this;

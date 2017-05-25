@@ -1,14 +1,15 @@
 <?php
-
 namespace exface\BarcodeScanner\Actions;
 
 class ScanToCount extends AbstractScanAction
 {
 
     private $barcode_prefixes = '';
- // TODO get the value from the app config as soon as configs are possible
+
+    // TODO get the value from the app config as soon as configs are possible
     private $barcode_suffixes = '';
- // TODO get the value from the app config as soon as configs are possible
+
+    // TODO get the value from the app config as soon as configs are possible
     private $search_barcode_in_column_id = '';
 
     private $increment_value_in_column_id = '';
@@ -59,7 +60,7 @@ class ScanToCount extends AbstractScanAction
      * Returns the number of sequential scans, that indicate a long press of the scanner button.
      * In this case
      * the GUI is supposed to open a number input dialog to allow the user to type the desired quantity.
-     * 
+     *
      * @return int
      */
     public function getDetectLongpressAfterSequentialScans()
@@ -71,7 +72,7 @@ class ScanToCount extends AbstractScanAction
      * Sets the number of sequential scans, that indicate a long press of the scanner button.
      * In this case
      * the GUI is supposed to open a number input dialog to allow the user to type the desired quantity.
-     * 
+     *
      * @param int $value            
      */
     public function setDetectLongpressAfterSequentialScans($value)
@@ -81,8 +82,7 @@ class ScanToCount extends AbstractScanAction
 
     public function printHelperFunctions()
     {
-        $table = $this->getTemplate()->getElement($this->getCalledByWidget()
-            ->getInputWidget());
+        $table = $this->getTemplate()->getElement($this->getCalledByWidget()->getInputWidget());
         // TODO Make it possible to specify, which column to use for comparison - currently it is always the next column to the right
         $output = "
 				function incrementCellValue(barcode, qty, overwrite){
@@ -137,10 +137,7 @@ class ScanToCount extends AbstractScanAction
 					
 				}
 				
-				$(document)." . ($this->getApp()
-            ->getWorkbench()
-            ->ui()
-            ->getTemplateFromRequest() instanceof \exface\JQueryMobileTemplate\Template\jQueryMobile ? "on('pageshow', '#" . $table->getJqmPageId() . "'," : "ready(") . " function(){
+				$(document)." . ($this->getApp()->getWorkbench()->ui()->getTemplateFromRequest() instanceof \exface\JQueryMobileTemplate\Template\jQueryMobile ? "on('pageshow', '#" . $table->getJqmPageId() . "'," : "ready(") . " function(){
 						$(document).scannerDetection({
 							timeBeforeScanTest: 200,
 							scanButtonLongPressThreshold: " . $this->getDetectLongpressAfterSequentialScans() . ",

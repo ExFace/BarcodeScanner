@@ -1,5 +1,4 @@
 <?php
-
 namespace exface\BarcodeScanner\Actions;
 
 use exface\Core\Actions\CustomTemplateScript;
@@ -95,11 +94,7 @@ class AbstractScanAction extends CustomTemplateScript
     protected function buildJsCameraInit()
     {
         $result = '';
-        $button = $this->getApp()
-            ->getWorkbench()
-            ->ui()
-            ->getTemplate()
-            ->getElement($this->getCalledByWidget());
+        $button = $this->getApp()->getWorkbench()->ui()->getTemplate()->getElement($this->getCalledByWidget());
         
         $readers = explode(',', $this->getBarcodeTypes());
         for ($i = 0; $i < count($readers); $i ++) {

@@ -1,5 +1,4 @@
 <?php
-
 namespace exface\BarcodeScanner\Actions;
 
 class ScanToQuickSearch extends AbstractScanAction
@@ -7,8 +6,7 @@ class ScanToQuickSearch extends AbstractScanAction
 
     public function printHelperFunctions()
     {
-        $table = $this->getTemplate()->getElement($this->getCalledByWidget()
-            ->getInputWidget());
+        $table = $this->getTemplate()->getElement($this->getCalledByWidget()->getInputWidget());
         if ($this->getTemplate()->is('exface.JQueryMobile')) {
             $document_event = "on('pageshow', '#" . $table->getJqmPageId() . "',";
             $single_result_action_script = "{$table->getId()}_table.row(0).nodes().to$().trigger('taphold');";

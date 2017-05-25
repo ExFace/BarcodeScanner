@@ -1,5 +1,4 @@
 <?php
-
 namespace exface\BarcodeScanner\Actions;
 
 class ScanToFilter extends AbstractScanAction
@@ -9,13 +8,9 @@ class ScanToFilter extends AbstractScanAction
 
     public function printHelperFunctions()
     {
-        $table = $this->getTemplate()->getElement($this->getCalledByWidget()
-            ->getInputWidget());
+        $table = $this->getTemplate()->getElement($this->getCalledByWidget()->getInputWidget());
         $output = "
-				$(document)." . ($this->getApp()
-            ->getWorkbench()
-            ->ui()
-            ->getTemplateFromRequest() instanceof \exface\JQueryMobileTemplate\Template\jQueryMobile ? "on('pageshow', '#" . $table->getJqmPageId() . "'," : "ready(") . " function(){
+				$(document)." . ($this->getApp()->getWorkbench()->ui()->getTemplateFromRequest() instanceof \exface\JQueryMobileTemplate\Template\jQueryMobile ? "on('pageshow', '#" . $table->getJqmPageId() . "'," : "ready(") . " function(){
 					$(document).scannerDetection({
 							timeBeforeScanTest: 200,
 							avgTimeByChar: 40,
@@ -24,14 +19,7 @@ class ScanToFilter extends AbstractScanAction
 							startChar: [120],
 							ignoreIfFocusOn: 'input',
 							onComplete:	function(barcode, qty){ 
-								" . $this->getApp()
-            ->getWorkbench()
-            ->ui()
-            ->getTemplate()
-            ->getElementByWidgetId($this->getFilterId(), $this->getCalledByWidget()
-            ->getPage()
-            ->getId())
-            ->buildJsValueSetter('barcode') . "; 
+								" . $this->getApp()->getWorkbench()->ui()->getTemplate()->getElementByWidgetId($this->getFilterId(), $this->getCalledByWidget()->getPage()->getId())->buildJsValueSetter('barcode') . "; 
 								$('#{$table->getId()}').one('draw.dt', function(){ 
 									if ({$table->getId()}_table.rows()[0].length === 1){
 										{$table->getId()}_table.row(0).nodes().to$().trigger('taphold'); 

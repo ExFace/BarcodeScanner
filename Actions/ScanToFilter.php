@@ -1,12 +1,21 @@
-<?php namespace exface\BarcodeScanner\Actions;
+<?php
 
-class ScanToFilter extends AbstractScanAction {
-	private $filter_id = null;
-	
-	public function print_helper_functions(){
-		$table =  $this->get_template()->get_element($this->get_called_by_widget()->get_input_widget());
-		$output = "
-				$(document)." . ($this->get_app()->get_workbench()->ui()->get_template_from_request() instanceof  \exface\JQueryMobileTemplate\Template\jQueryMobile ? "on('pageshow', '#" . $table->get_jqm_page_id() . "'," : "ready(" ) . " function(){
+namespace exface\BarcodeScanner\Actions;
+
+class ScanToFilter extends AbstractScanAction
+{
+
+    private $filter_id = null;
+
+    public function printHelperFunctions()
+    {
+        $table = $this->getTemplate()->getElement($this->getCalledByWidget()
+            ->getInputWidget());
+        $output = "
+				$(document)." . ($this->getApp()
+            ->getWorkbench()
+            ->ui()
+            ->getTemplateFromRequest() instanceof \exface\JQueryMobileTemplate\Template\jQueryMobile ? "on('pageshow', '#" . $table->getJqmPageId() . "'," : "ready(") . " function(){
 					$(document).scannerDetection({
 							timeBeforeScanTest: 200,
 							avgTimeByChar: 40,
@@ -15,34 +24,43 @@ class ScanToFilter extends AbstractScanAction {
 							startChar: [120],
 							ignoreIfFocusOn: 'input',
 							onComplete:	function(barcode, qty){ 
-								" . $this->get_app()->get_workbench()->ui()->get_template()->get_element_by_widget_id($this->get_filter_id(), $this->get_called_by_widget()->get_page()->get_id())->build_js_value_setter('barcode') . "; 
-								$('#{$table->get_id()}').one('draw.dt', function(){ 
-									if ({$table->get_id()}_table.rows()[0].length === 1){
-										{$table->get_id()}_table.row(0).nodes().to$().trigger('taphold'); 
+								" . $this->getApp()
+            ->getWorkbench()
+            ->ui()
+            ->getTemplate()
+            ->getElementByWidgetId($this->getFilterId(), $this->getCalledByWidget()
+            ->getPage()
+            ->getId())
+            ->buildJsValueSetter('barcode') . "; 
+								$('#{$table->getId()}').one('draw.dt', function(){ 
+									if ({$table->getId()}_table.rows()[0].length === 1){
+										{$table->getId()}_table.row(0).nodes().to$().trigger('taphold'); 
 									}
 								});
-								{$table->get_id()}_table.draw(); 
+								{$table->getId()}_table.draw(); 
 							}
 					});
 				});
 				";
-		if ($this->get_template()->is('exface.JQueryMobile')){
-			$output .= "
-				$(document).on('pagehide', '#" . $table->get_jqm_page_id() . "', function(){
+        if ($this->getTemplate()->is('exface.JQueryMobile')) {
+            $output .= "
+				$(document).on('pagehide', '#" . $table->getJqmPageId() . "', function(){
 					$(document).scannerDetection(false);
 				});
 				";
-		}
-		
-		return $output;
-	}
-	
-	public function get_filter_id() {
-		return $this->filter_id;
-	}
-	
-	public function set_filter_id($value) {
-		$this->filter_id = $value;
-	}  
+        }
+        
+        return $output;
+    }
+
+    public function getFilterId()
+    {
+        return $this->filter_id;
+    }
+
+    public function setFilterId($value)
+    {
+        $this->filter_id = $value;
+    }
 }
 ?>

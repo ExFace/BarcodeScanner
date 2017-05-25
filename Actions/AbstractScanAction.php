@@ -1,94 +1,119 @@
-<?php namespace exface\BarcodeScanner\Actions;
+<?php
+
+namespace exface\BarcodeScanner\Actions;
 
 use exface\Core\Actions\CustomTemplateScript;
 use exface\Core\DataTypes\BooleanDataType;
 
-class AbstractScanAction extends CustomTemplateScript {
-	private $use_file_upload = false;
-	private $use_camera = false;
-	private $switch_camera = false;
-	private $viewfinder_width = '640';
-	private $viewfinder_height = '480';
-	private $barcode_types = 'ean, ean_8';
-	
-	protected function init(){
-		$this->set_script_language('javascript');
-		$this->set_icon_name('barcode');
-	}
-	
-	public function get_use_file_upload() {
-		return $this->use_file_upload;
-	}
-	
-	public function set_use_file_upload($value) {
-		$this->use_file_upload = BooleanDataType::parse($value);
-		return $this;
-	} 
-	
-	public function get_use_camera() {
-		return $this->use_camera;
-	}
-	
-	public function set_use_camera($value) {
-		$this->use_camera = BooleanDataType::parse($value);
-		return $this;
-	}  
-	
-	public function get_barcode_types() {
-		return $this->barcode_types;
-	}
-	
-	public function set_barcode_types($value) {
-		$this->barcode_types = $value;
-		return $this;
-	} 
-	
-	public function get_switch_camera() {
-		return $this->switch_camera;
-	}
-	
-	public function set_switch_camera($value) {
-		$this->switch_camera = BooleanDataType::parse($value);
-		return $this;
-	}
-	
-	public function get_viewfinder_width() {
-		return $this->viewfinder_width;
-	}
-	
-	public function set_viewfinder_width($value) {
-		$this->viewfinder_width = $value;
-		return $this;
-	}
-	
-	public function get_viewfinder_height() {
-		return $this->viewfinder_height;
-	}
-	
-	public function set_viewfinder_height($value) {
-		$this->viewfinder_height = $value;
-		return $this;
-	}
-	
-	    
-	
-	protected function build_js_camera_init(){
-		$result = '';
-		$button = $this->get_app()->get_workbench()->ui()->get_template()->get_element($this->get_called_by_widget());
-		
-		$readers = explode(',', $this->get_barcode_types());
-		for($i=0; $i<count($readers); $i++){
-			$readers[$i] = trim($readers[$i]) . '_reader';
-		}
-		$readers_init = json_encode($readers);
-		
-		$camera = $this->get_switch_camera() ? 'user' : 'environment';
-		
-		if ($this->get_use_file_upload()){
-			$result = <<<JS
+class AbstractScanAction extends CustomTemplateScript
+{
+
+    private $use_file_upload = false;
+
+    private $use_camera = false;
+
+    private $switch_camera = false;
+
+    private $viewfinder_width = '640';
+
+    private $viewfinder_height = '480';
+
+    private $barcode_types = 'ean, ean_8';
+
+    protected function init()
+    {
+        $this->setScriptLanguage('javascript');
+        $this->setIconName('barcode');
+    }
+
+    public function getUseFileUpload()
+    {
+        return $this->use_file_upload;
+    }
+
+    public function setUseFileUpload($value)
+    {
+        $this->use_file_upload = BooleanDataType::parse($value);
+        return $this;
+    }
+
+    public function getUseCamera()
+    {
+        return $this->use_camera;
+    }
+
+    public function setUseCamera($value)
+    {
+        $this->use_camera = BooleanDataType::parse($value);
+        return $this;
+    }
+
+    public function getBarcodeTypes()
+    {
+        return $this->barcode_types;
+    }
+
+    public function setBarcodeTypes($value)
+    {
+        $this->barcode_types = $value;
+        return $this;
+    }
+
+    public function getSwitchCamera()
+    {
+        return $this->switch_camera;
+    }
+
+    public function setSwitchCamera($value)
+    {
+        $this->switch_camera = BooleanDataType::parse($value);
+        return $this;
+    }
+
+    public function getViewfinderWidth()
+    {
+        return $this->viewfinder_width;
+    }
+
+    public function setViewfinderWidth($value)
+    {
+        $this->viewfinder_width = $value;
+        return $this;
+    }
+
+    public function getViewfinderHeight()
+    {
+        return $this->viewfinder_height;
+    }
+
+    public function setViewfinderHeight($value)
+    {
+        $this->viewfinder_height = $value;
+        return $this;
+    }
+
+    protected function buildJsCameraInit()
+    {
+        $result = '';
+        $button = $this->getApp()
+            ->getWorkbench()
+            ->ui()
+            ->getTemplate()
+            ->getElement($this->getCalledByWidget());
+        
+        $readers = explode(',', $this->getBarcodeTypes());
+        for ($i = 0; $i < count($readers); $i ++) {
+            $readers[$i] = trim($readers[$i]) . '_reader';
+        }
+        $readers_init = json_encode($readers);
+        
+        $camera = $this->getSwitchCamera() ? 'user' : 'environment';
+        
+        if ($this->getUseFileUpload()) {
+            $result = <<<JS
 
 $(function() {
-	$('#{$button->get_id()}').after($('<input style="visibility:hidden; display:inline; width: 0px;"type="file" id="{$button->get_id()}_file" accept="image/*;capture=camera"/>'));
+	$('#{$button->getId()}').after($('<input style="visibility:hidden; display:inline; width: 0px;"type="file" id="{$button->getId()}_file" accept="image/*;capture=camera"/>'));
 	
     var App = {
         init: function() {
@@ -101,7 +126,7 @@ $(function() {
         attachListeners: function() {
             var self = this;
 
-            $("#{$button->get_id()}_file").on("change", function(e) {
+            $("#{$button->getId()}_file").on("change", function(e) {
                 if (e.target.files && e.target.files.length) {
                     App.decode(URL.createObjectURL(e.target.files[0]));
                 }
@@ -152,11 +177,11 @@ $(function() {
         decode: function(src) {
             var self = this,
                 config = $.extend({}, self.state, {src: src});
-			{$button->build_js_busy_icon_show()}
+			{$button->buildJsBusyIconShow()}
             setTimeout(function() {
-			    {$button->build_js_busy_icon_hide()}
+			    {$button->buildJsBusyIconHide()}
 			}, 5000);
-            Quagga.decodeSingle(config, function(result) { $(document).scannerDetection(result.codeResult.code); {$button->build_js_busy_icon_hide()}});
+            Quagga.decodeSingle(config, function(result) { $(document).scannerDetection(result.codeResult.code); {$button->buildJsBusyIconHide()}});
         },
         setState: function(path, value) {
             var self = this;
@@ -207,9 +232,9 @@ $(function() {
 }); 
 			
 JS;
-		} elseif ($this->get_use_camera()) {
-			$dialog = <<<JS
-<div class="modal" id="{$button->get_id()}_scanner">\
+        } elseif ($this->getUseCamera()) {
+            $dialog = <<<JS
+<div class="modal" id="{$button->getId()}_scanner">\
 	<style>\
 		#interactive.viewport {position: relative;}\
 		#interactive.viewport > canvas, #interactive.viewport > video { max-width: 100%; width: 100%;}\
@@ -231,19 +256,19 @@ JS;
 	</div><!-- /.modal-dialog -->\
 </div><!-- /.modal -->\	
 JS;
-			$result = <<<JS
+            $result = <<<JS
 	
 $(function() {
 	$('body').append('{$dialog}');
 	
-	$("#{$button->get_id()}").on("click", function(e) {
-       $('#{$button->get_id()}_scanner').modal('show');
+	$("#{$button->getId()}").on("click", function(e) {
+       $('#{$button->getId()}_scanner').modal('show');
 		Quagga.init({
 				inputStream: {
 	                type : "LiveStream",
 	                constraints: {
-	                    width: {$this->get_viewfinder_width()},
-	                    height: {$this->get_viewfinder_height()},
+	                    width: {$this->getViewfinderWidth()},
+	                    height: {$this->getViewfinderHeight()},
 	                    facingMode: "{$camera}"
 	                }
 	            },
@@ -267,7 +292,7 @@ $(function() {
 		);
     });
        		
-    $('#{$button->get_id()}_scanner').on('hide.bs.modal', function(){
+    $('#{$button->getId()}_scanner').on('hide.bs.modal', function(){
     	if (Quagga){
     		Quagga.stop();	
     	}
@@ -308,16 +333,15 @@ $(function() {
     	if (result.codeResult.code){
     		$(document).scannerDetection(result.codeResult.code);
     		window.scrollTo(0, 0);
-    		$('#{$button->get_id()}_scanner').modal('hide');
+    		$('#{$button->getId()}_scanner').modal('hide');
     	}
     });
 });		
 			
 JS;
-		} 
-		
-		return $result;
-	}
-
+        }
+        
+        return $result;
+    }
 }
 ?>

@@ -1,20 +1,29 @@
 {
-	"name" : "ExFace/BarcodeScanner",
-	"description" : "Integratoin of BarcodeScanners in most AJAX templates for ExFace",
-	"type" : "library",
-	"license" : "GPL-3.0+",
-	"authors" : [{
-			"name" : "Andrej Kabachnik",
-			"email" : "kabachnik@gmail.com",
-			"role" : "Creator"
-		}
-	],
-	"support" : {
-		"issues" : "https://github.com/exface/BarcodeScanner/issues"
-	},
-	"require" : {
-		"exface/core" : "~0.1",
-		"bower-asset/quagga": ">=0.11",
-		"bower-asset/jquery-numpad" : "~1.4"
-	}
+    "name": "ExFace/BarcodeScanner",
+    "description": "Integratoin of BarcodeScanners in most AJAX templates for ExFace",
+    "type": "library",
+    "license": "GPL-3.0+",
+    "authors": [
+        {
+            "name": "Andrej Kabachnik",
+            "email": "kabachnik@gmail.com",
+            "role": "Creator"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/exface/BarcodeScanner/issues"
+    },
+    "require": {
+        "exface/core": "~0.1",
+        "bower-asset/quagga": ">=0.11",
+        "bower-asset/jquery-numpad": "~1.4"
+    },
+    "extra": {
+        "app": {
+            "app_uid": "0x11e7526222b7f96e8b700205857feb80",
+            "app_alias": "exface.BarcodeScanner",
+            "model_md5": "05ec8c728f5650eed755a026cfae6fd6",
+            "model_timestamp": "2017-06-16 07:05:43"
+        }
+    }
 }

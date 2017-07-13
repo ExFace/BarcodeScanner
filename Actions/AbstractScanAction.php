@@ -3,6 +3,7 @@ namespace exface\BarcodeScanner\Actions;
 
 use exface\Core\Actions\CustomTemplateScript;
 use exface\Core\DataTypes\BooleanDataType;
+use exface\Core\CommonLogic\Constants\Icons;
 
 class AbstractScanAction extends CustomTemplateScript
 {
@@ -22,7 +23,7 @@ class AbstractScanAction extends CustomTemplateScript
     protected function init()
     {
         $this->setScriptLanguage('javascript');
-        $this->setIconName('barcode');
+        $this->setIconName(Icons::BARCODE);
     }
 
     public function getUseFileUpload()

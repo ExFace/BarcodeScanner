@@ -25,5 +25,13 @@
             "model_md5": "05ec8c728f5650eed755a026cfae6fd6",
             "model_timestamp": "2017-06-16 07:05:43"
         }
+    },
+    "autoload": {
+        "psr-4": { "exface\\BarcodeScanner\\": "" },
+        "exclude-from-classmap": [
+            "/Config/",
+            "/Translations/",
+            "/Model/"
+        ]
     }
 }

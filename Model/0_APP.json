@@ -68,14 +68,14 @@
     "rows": [
         {
             "CREATED_ON": "2017-06-16 07:05:10",
-            "MODIFIED_ON": "2017-06-16 07:05:43",
+            "MODIFIED_ON": "2017-08-02 09:16:27",
             "CREATED_BY_USER": "0x31000000000000000000000000000000",
             "MODIFIED_BY_USER": "0x31000000000000000000000000000000",
             "UID": "0x11e7526222b7f96e8b700205857feb80",
             "PACKAGE": "exface\/BarcodeScanner",
             "ALIAS": "exface.BarcodeScanner",
-            "NAME": "BarcodeScanner-Connector",
-            "LABEL": "BarcodeScanner-Connector"
+            "NAME": "ExFace BarcodeScanner-Connector",
+            "LABEL": "ExFace BarcodeScanner-Connector"
         }
     ],
     "totals_rows": [],

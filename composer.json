@@ -22,12 +22,14 @@
         "app": {
             "app_uid": "0x11e7526222b7f96e8b700205857feb80",
             "app_alias": "exface.BarcodeScanner",
-            "model_md5": "05ec8c728f5650eed755a026cfae6fd6",
-            "model_timestamp": "2017-06-16 07:05:43"
+            "model_md5": "c097501ed6f4b4c30bb4739b587d18ed",
+            "model_timestamp": "2017-08-02 09:16:27"
         }
     },
     "autoload": {
-        "psr-4": { "exface\\BarcodeScanner\\": "" },
+        "psr-4": {
+            "exface\\BarcodeScanner\\": ""
+        },
         "exclude-from-classmap": [
             "/Config/",
             "/Translations/",

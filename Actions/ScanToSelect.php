@@ -119,6 +119,12 @@ class ScanToSelect extends AbstractScanAction
                         " . $call_action . "
 					}
 				}
+
+
+							
+				function showKeyPad(barcode, qty, target, xpos){
+					
+				}
 				
 				$(document)." . ($this->getTemplate()->is('exface.JQueryMobileTemplate') ? "on('pageshow', '#" . $table->getJqmPageId() . "'," : "ready(") . " function(){
 						$(document).scannerDetection({

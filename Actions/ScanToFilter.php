@@ -10,7 +10,7 @@ class ScanToFilter extends AbstractScanAction
     {
         $table = $this->getTemplate()->getElement($this->getCalledByWidget()->getInputWidget());
         $output = "
-				$(document)." . ($this->getApp()->getWorkbench()->ui()->getTemplateFromRequest() instanceof \exface\JQueryMobileTemplate\Template\jQueryMobile ? "on('pageshow', '#" . $table->getJqmPageId() . "'," : "ready(") . " function(){
+				$(document)." . ($this->getTemplate()->is('exface.JQueryMobileTemplate') ? "on('pageshow', '#" . $table->getJqmPageId() . "'," : "ready(") . " function(){
 					$(document).scannerDetection({
 							timeBeforeScanTest: 200,
 							avgTimeByChar: 40,
@@ -30,7 +30,7 @@ class ScanToFilter extends AbstractScanAction
 					});
 				});
 				";
-        if ($this->getTemplate()->is('exface.JQueryMobile')) {
+        if ($this->getTemplate()->is('exface.JQueryMobileTemplate')) {
             $output .= "
 				$(document).on('pagehide', '#" . $table->getJqmPageId() . "', function(){
 					$(document).scannerDetection(false);

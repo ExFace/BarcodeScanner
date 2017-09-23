@@ -137,7 +137,7 @@ class ScanToCount extends AbstractScanAction
 					
 				}
 				
-				$(document)." . ($this->getApp()->getWorkbench()->ui()->getTemplateFromRequest() instanceof \exface\JQueryMobileTemplate\Template\jQueryMobile ? "on('pageshow', '#" . $table->getJqmPageId() . "'," : "ready(") . " function(){
+				$(document)." . ($this->getTemplate()->is('exface.JQueryMobileTemplate') ? "on('pageshow', '#" . $table->getJqmPageId() . "'," : "ready(") . " function(){
 						$(document).scannerDetection({
 							timeBeforeScanTest: 200,
 							scanButtonLongPressThreshold: " . $this->getDetectLongpressAfterSequentialScans() . ",
@@ -158,7 +158,7 @@ class ScanToCount extends AbstractScanAction
 				} );
 				";
         
-        if ($this->getTemplate()->is('exface.JQueryMobile')) {
+        if ($this->getTemplate()->is('exface.JQueryMobileTemplate')) {
             $output .= "
 				$(document).on('pagehide', '#" . $table->getJqmPageId() . "', function(){
 					$(document).scannerDetection(false);

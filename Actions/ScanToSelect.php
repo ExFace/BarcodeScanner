@@ -130,7 +130,7 @@ class ScanToSelect extends AbstractScanAction
 							scanButtonKeyCode: 116,
 							startChar: [120],
 							ignoreIfFocusOn: 'input',
-							onComplete:	incrementCellValue,
+							onComplete:	selectOnScan,
 							onScanButtonLongPressed: showKeyPad,
 							//onReceive: function(string){console.log(string);}
 					});

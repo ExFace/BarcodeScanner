@@ -1,102 +1,42 @@
 <?php
 namespace exface\BarcodeScanner\Actions;
 
-use exface\Core\Factories\WidgetLinkFactory;
+use exface\Core\Exceptions\Actions\ActionConfigurationError;
 
+/**
+ * Selects the data item(s) having the scanned code in the specified column.
+ * 
+ * Use the action ScanToPressButton if you want to perform an action right after selection!
+ * 
+ * @author Andrej
+ *
+ */
 class ScanToSelect extends AbstractScanAction
 {
 
-    private $barcode_prefixes = '';
-
-    // TODO get the value from the app config as soon as configs are possible
-    private $barcode_suffixes = '';
-
-    // TODO get the value from the app config as soon as configs are possible
     private $search_barcode_in_column_id = '';
-
-    private $increment_value_in_column_id = '';
-
-    private $detect_longpress_after_sequential_scans = 5;
-    
-    private $press_button_widget_link = null;
-
-    public function getBarcodePrefixes()
-    {
-        return $this->barcode_prefixes;
-    }
-
-    public function setBarcodePrefixes($value)
-    {
-        $this->barcode_prefixes = $value;
-    }
-
-    public function getBarcodeSuffixes()
-    {
-        return $this->barcode_suffixes;
-    }
-
-    public function setBarcodeSuffixes($value)
-    {
-        $this->barcode_suffixes = $value;
-    }
 
     public function getSearchBarcodeInColumnId()
     {
+        if (is_null($this->search_barcode_in_column_id)){
+            throw new ActionConfigurationError($this, 'No column to search for the scanned barcode is specified: please set the "search_barcode_in_column_id" property for the action!');
+        }
         return $this->search_barcode_in_column_id;
     }
 
     public function setSearchBarcodeInColumnId($value)
     {
         $this->search_barcode_in_column_id = $value;
+        return $this;
     }
 
-    public function getIncrementValueInColumnId()
+    protected function buildJsScanFunctionBody($js_var_barcode, $js_var_qty, $js_var_overwrite)
     {
-        return $this->increment_value_in_column_id;
-    }
-
-    public function setIncrementValueInColumnId($value)
-    {
-        $this->increment_value_in_column_id = $value;
-    }
-
-    /**
-     * Returns the number of sequential scans, that indicate a long press of the scanner button.
-     * In this case
-     * the GUI is supposed to open a number input dialog to allow the user to type the desired quantity.
-     *
-     * @return int
-     */
-    public function getDetectLongpressAfterSequentialScans()
-    {
-        return $this->detect_longpress_after_sequential_scans;
-    }
-
-    /**
-     * Sets the number of sequential scans, that indicate a long press of the scanner button.
-     * In this case
-     * the GUI is supposed to open a number input dialog to allow the user to type the desired quantity.
-     *
-     * @param int $value            
-     */
-    public function setDetectLongpressAfterSequentialScans($value)
-    {
-        $this->detect_longpress_after_sequential_scans = $value;
-    }
-
-    public function printHelperFunctions()
-    {
-        $table = $this->getTemplate()->getElement($this->getCalledByWidget()->getInputWidget());
-        
-        if ($link = $this->getPressButtonWidgetLink()){
-            $call_action = $this->getTemplate()->getElement($link->getWidget())->buildJsClickFunctionName() . '();';
-        }
-        
         // TODO Make it possible to specify, which column to use for comparison - currently it is always the next column to the right
-        $output = "
-				function selectOnScan(barcode, qty, overwrite){
-					var scannedString = barcode;
-					var table = " . $table->getId() . "_table;
+        return "
+
+                    var scannedString = " . $js_var_barcode . ";
+					var table = " . $this->getInputElement()->getId() . "_table;
 					var rowIdx = -1;
 					var split = 1;
 					// Find the row with the barcode scanned. If not found, it might also be possible, that the scanned string
@@ -108,61 +48,31 @@ class ScanToSelect extends AbstractScanAction
 							}
 							rowIdx = table.column('" . $this->getSearchBarcodeInColumnId() . ":name').data().indexOf(barcode);
 						}
-						if (rowIdx > -1) qty = qty + split - 1;
+						if (rowIdx > -1) " . $js_var_qty . " = " . $js_var_qty . " + split - 1;
 						split++;
 					}
 													
 					if (rowIdx == -1){
-						alert('Barcode \"' + scannedString + '\" not found!');
+						{$this->getInputElement()->buildJsShowMessageError("'Barcode \"' + scannedString + '\" not found!'")};
 					} else {
-						table.rows(rowIdx).select();
-                        " . $call_action . "
+						{$this->buildJsSelectByIndex('rowIdx', $js_var_barcode, $js_var_qty, $js_var_overwrite)}
 					}
-				}
 
-
-							
-				function showKeyPad(barcode, qty, target, xpos){
-					
-				}
-				
-				$(document)." . ($this->getTemplate()->is('exface.JQueryMobileTemplate') ? "on('pageshow', '#" . $table->getJqmPageId() . "'," : "ready(") . " function(){
-						$(document).scannerDetection({
-							timeBeforeScanTest: 200,
-							scanButtonLongPressThreshold: " . $this->getDetectLongpressAfterSequentialScans() . ",
-							" . ($this->getBarcodePrefixes() ? 'startChar: [' . $this->getBarcodePrefixes() . '],' : '') . "
-							" . ($this->getBarcodeSuffixes() ? 'endChar: [' . $this->getBarcodeSuffixes() . '],' : '') . "
-							avgTimeByChar: 40,
-							scanButtonKeyCode: 116,
-							startChar: [120],
-							ignoreIfFocusOn: 'input',
-							onComplete:	selectOnScan,
-							onScanButtonLongPressed: showKeyPad,
-							//onReceive: function(string){console.log(string);}
-					});
-				});
-				";
-        
-        if ($this->getTemplate()->is('exface.JQueryMobileTemplate')) {
-            $output .= "
-				$(document).on('pagehide', '#" . $table->getJqmPageId() . "', function(){
-					$(document).scannerDetection(false);
-				});
-				";
-        }
-        
-        return $output;
+";
+            
     }
     
-    public function getPressButtonWidgetLink()
+    /**
+     * Returns a JS script that should perform the selection of item identified by the passed JS variable.
+     * 
+     * By default, the corresponding row is selected.
+     * 
+     * @return string
+     */
+    protected function buildJsSelectByIndex($js_var_rowIdx, $js_var_barcode, $js_var_qty, $js_var_overwrite)
     {
-        return $this->press_button_widget_link;
+        return "table.rows(" . $js_var_rowIdx . ").select();";
     }
-    
-    public function setPressButton($widget_link_string_or_uxon)
-    {
-        $this->press_button_widget_link = WidgetLinkFactory::createFromAnything($this->getWorkbench(), $widget_link_string_or_uxon);
-        return $this;
-    }
+
 }
 ?>

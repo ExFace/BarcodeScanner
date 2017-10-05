@@ -1,54 +1,53 @@
 <?php
 namespace exface\BarcodeScanner\Actions;
 
-class ScanToFilter extends AbstractScanAction
+use exface\Core\Exceptions\Actions\ActionConfigurationError;
+
+/**
+ * Places the scanned code in the filter widget specified by the filter_id property and performs a search.
+ * 
+ * If the search returns a single result, the corresponding context menu is triggered automatically.
+ * 
+ * @author Andrej Kabachnik
+ *
+ */
+class ScanToFilter extends ScanToQuickSearch
 {
 
     private $filter_id = null;
 
-    public function printHelperFunctions()
-    {
-        $table = $this->getTemplate()->getElement($this->getCalledByWidget()->getInputWidget());
-        $output = "
-				$(document)." . ($this->getTemplate()->is('exface.JQueryMobileTemplate') ? "on('pageshow', '#" . $table->getJqmPageId() . "'," : "ready(") . " function(){
-					$(document).scannerDetection({
-							timeBeforeScanTest: 200,
-							avgTimeByChar: 40,
-							scanButtonKeyCode: 116,
-							endChar: [9,13],
-							startChar: [120],
-							ignoreIfFocusOn: 'input',
-							onComplete:	function(barcode, qty){ 
-								" . $this->getApp()->getWorkbench()->ui()->getTemplate()->getElementByWidgetId($this->getFilterId(), $this->getCalledByWidget()->getPage()->getId())->buildJsValueSetter('barcode') . "; 
-								$('#{$table->getId()}').one('draw.dt', function(){ 
-									if ({$table->getId()}_table.rows()[0].length === 1){
-										{$table->getId()}_table.row(0).nodes().to$().trigger('taphold'); 
-									}
-								});
-								{$table->getId()}_table.draw(); 
-							}
-					});
-				});
-				";
-        if ($this->getTemplate()->is('exface.JQueryMobileTemplate')) {
-            $output .= "
-				$(document).on('pagehide', '#" . $table->getJqmPageId() . "', function(){
-					$(document).scannerDetection(false);
-				});
-				";
-        }
-        
-        return $output;
-    }
-
     public function getFilterId()
     {
+        if (is_null($this->filter_id)){
+            throw new ActionConfigurationError($this, 'No filter widget specified for action ' . $this->getAlias . ': please set the "filter_id" property of the action!');
+        }
         return $this->filter_id;
     }
 
+    /**
+     * Specifies the widget id of the filter to fill with the scanned code.
+     * 
+     * @uxon-property filter_id
+     * @uxon-type string
+     * 
+     * @param string $value
+     * @return \exface\BarcodeScanner\Actions\ScanToFilter
+     */
     public function setFilterId($value)
     {
         $this->filter_id = $value;
+        return $this;
+    }
+    
+    protected function buildJsScanFunctionBody($js_var_barcode, $js_var_qty, $js_var_overwrite)
+    {
+        return "
+
+                                " . $this->getTemplate()->getElementByWidgetId($this->getFilterId(), $this->getCalledByWidget()->getPage()->getId())->buildJsValueSetter($js_var_barcode) . "; 
+								{$this->buildJsSingleResultHandler()}
+								{$this->getInputElement()->buildJsRefresh()}; 
+
+";
     }
 }
 ?>

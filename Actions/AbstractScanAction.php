@@ -4,10 +4,13 @@ namespace exface\BarcodeScanner\Actions;
 use exface\Core\Actions\CustomTemplateScript;
 use exface\Core\DataTypes\BooleanDataType;
 use exface\Core\CommonLogic\Constants\Icons;
+use exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement;
+use exface\Core\Exceptions\Actions\ActionConfigurationError;
 
-class AbstractScanAction extends CustomTemplateScript
+abstract class AbstractScanAction extends CustomTemplateScript
 {
-
+    private $use_keyboard_scanner = true;
+    
     private $use_file_upload = false;
 
     private $use_camera = false;
@@ -19,11 +22,136 @@ class AbstractScanAction extends CustomTemplateScript
     private $viewfinder_height = '480';
 
     private $barcode_types = 'ean, ean_8';
-
+    
+    // TODO get the value from the app config as soon as configs are possible
+    private $barcode_prefixes = '';
+    
+    // TODO get the value from the app config as soon as configs are possible
+    private $barcode_suffixes = '';
+    
+    // TODO get the value from the app config as soon as configs are possible
+    private $detect_longpress_after_sequential_scans = 5;
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Actions\CustomTemplateScript::init()
+     */
     protected function init()
     {
         $this->setScriptLanguage('javascript');
         $this->setIconName(Icons::BARCODE);
+        $this->setName($this->getApp()->getTranslator()->Translate('ACTION.DEFAULT_NAME'));
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    public function getBarcodePrefixes()
+    {
+        return $this->barcode_prefixes;
+    }
+    
+    /**
+     * Sets a comma-separated list of JS character codes for barcode prefixes.
+     * 
+     * Prefixes are special characters, that are being sent by some scanners to mark 
+     * the end of the barcode read. Suffixes will be stripped off the end of the 
+     * barcode!
+     * 
+     * @uxon-property barcode_prefixes
+     * @uxon-type string
+     * 
+     * @param string $value
+     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
+     */
+    public function setBarcodePrefixes($value)
+    {
+        $this->barcode_prefixes = $value;
+        return $this;
+    }
+    
+    /**
+     * 
+     * @return string
+     */
+    public function getBarcodeSuffixes()
+    {
+        return $this->barcode_suffixes;
+    }
+    
+    /**
+     * Sets a comma-separated list of JS character codes for barcode suffixes.
+     * 
+     * Suffixes are special characters, that are being sent by some scanners to mark 
+     * the end of the barcode read. Suffixes will be stripped off the end of the 
+     * barcode!
+     * 
+     * @uxon-property barcode_suffixes
+     * @uxon-type string
+     * 
+     * @param string $value
+     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
+     */
+    public function setBarcodeSuffixes($value)
+    {
+        $this->barcode_suffixes = $value;
+        return $this;
+    }
+    
+    /**
+     * Returns the number of sequential scans, that indicate a long press of the scanner button.
+     *
+     * @return int
+     */
+    public function getDetectLongpressAfterSequentialScans()
+    {
+        return $this->detect_longpress_after_sequential_scans;
+    }
+    
+    /**
+     * Sets the number of sequential scans, that indicate a long press of the scanner button.
+     * 
+     * In this case the GUI is supposed to open a number input dialog to allow the user to type the desired quantity.
+     *
+     * @uxon-property detect_longpress_after_sequential_scans
+     * @uxon-type number
+     * 
+     * @param integer $value
+     * @return AbstractScanAction
+     */
+    public function setDetectLongpressAfterSequentialScans($value)
+    {
+        $this->detect_longpress_after_sequential_scans = $value;
+        return $this;
+    }
+    
+    /**
+     * Returns TRUE if keyboard-scanners should be used and FALSE otherwise.
+     *  
+     * @return boolean
+     */
+    public function getUseKeyboardScanner()
+    {
+        return $this->use_keyboard_scanner;
+    }
+    
+    /**
+     * Set to FALSE to make the action ignore input via external scanners (built-in, bluetooth, USB, etc.).
+     * 
+     * This option is TRUE by default.
+     * 
+     * @uxon-property use_keyboard_scanner 
+     * @uxon-type boolean
+     * 
+     * @param boolean $value
+     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
+     */
+    public function setUseKeyboardScanner($value)
+    {
+        $this->use_keyboard_scanner = BooleanDataType::parse($value);
+        return $this;
     }
 
     public function getUseFileUpload()
@@ -31,6 +159,17 @@ class AbstractScanAction extends CustomTemplateScript
         return $this->use_file_upload;
     }
 
+    /**
+     * Set to TRUE to enable uploading images with barcodes to trigger the action - FALSE by default.
+     * 
+     * This option strongly depends on the device and the template used. 
+     * 
+     * @uxon-property use_file_upload
+     * @uxon-type boolean
+     * 
+     * @param boolean $value
+     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
+     */
     public function setUseFileUpload($value)
     {
         $this->use_file_upload = BooleanDataType::parse($value);
@@ -42,17 +181,42 @@ class AbstractScanAction extends CustomTemplateScript
         return $this->use_camera;
     }
 
+    /**
+     * Set to TRUE to enable scanning barcodes with the built-in camera of your device - FALSE by default.
+     * 
+     * This option strongly depends on the device and the template used. 
+     * 
+     * @uxon-property use_camera
+     * @uxon-type boolean
+     * 
+     * @param boolean $value
+     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
+     */
     public function setUseCamera($value)
     {
         $this->use_camera = BooleanDataType::parse($value);
         return $this;
     }
 
+    /**
+     * Returns a comma separated list of allowed barcode types or NULL if all types are allowed.
+     * 
+     * @return string
+     */
     public function getBarcodeTypes()
     {
         return $this->barcode_types;
     }
 
+    /**
+     * Specifies a list of allowed barcode types (other barcodes will be ignored).
+     * 
+     * @uxon-property barcode_types
+     * @uxon-type string
+     * 
+     * @param string $value
+     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
+     */
     public function setBarcodeTypes($value)
     {
         $this->barcode_types = $value;
@@ -70,29 +234,154 @@ class AbstractScanAction extends CustomTemplateScript
         return $this;
     }
 
-    public function getViewfinderWidth()
+    public function getCameraViewfinderWidth()
     {
         return $this->viewfinder_width;
     }
 
-    public function setViewfinderWidth($value)
+    public function setCameraViewfinderWidth($value)
     {
         $this->viewfinder_width = $value;
         return $this;
     }
 
-    public function getViewfinderHeight()
+    public function getCameraViewfinderHeight()
     {
         return $this->viewfinder_height;
     }
 
-    public function setViewfinderHeight($value)
+    public function setCameraViewfinderHeight($value)
     {
         $this->viewfinder_height = $value;
         return $this;
     }
+    
+    public function buildScriptHelperFunctions()
+    {
+        $output = '';
+        
+        if ($this->getUseCamera() || $this->getUseFileUpload()){
+            $output .= $this->buildJsInitQuagga();
+        } 
+        
+        // Add ScannerDetection in any case, as the camera scanner
+        // will simply trigger it (the camera behaves as a keyboard
+        // scanner)
+        $output .= $this->buildJsInitScannerDetection();
+        
+        return $output . $this->buildJsScanFunction();
+    }
+    
+    /**
+     * 
+     * @return AbstractJqueryElement
+     */
+    protected function getInputElement()
+    {
+        $element = $this->getTemplate()->getElement($this->getCalledByWidget()->getInputWidget());
+        if (! ($element instanceof AbstractJqueryElement)){
+            throw new ActionConfigurationError($this, 'Template "' . $this->getTemplate()->getAlias() . '" not supported! The BarcodeScanner actions only work with templates based on AbstractJqueryElements.');
+        }
+        return $element;
+    }
+    
+    /**
+     * 
+     * @return AbstractJqueryElement
+     */
+    protected function getButtonElement()
+    {
+        $element = $this->getTemplate()->getElement($this->getCalledByWidget());
+        if (! ($element instanceof AbstractJqueryElement)){
+            throw new ActionConfigurationError($this, 'Template "' . $this->getTemplate()->getAlias() . '" not supported! The BarcodeScanner actions only work with templates based on AbstractJqueryElements.');
+        }
+        return $element;
+    }
+    
+    /**
+     * Returns the JS function to be called when a barcode scan is detected.
+     * 
+     * This method basically wraps buildJsScanFunctionBody in a JS function.
+     * To implement a specific scan action, override buildSjScanFunction body,
+     * rather than this method.
+     * 
+     * @return string
+     */
+    protected function buildJsScanFunction()
+    {
+        return <<<JS
 
-    protected function buildJsCameraInit()
+				function {$this->buildJsScanFunctionName()}(barcode, qty, overwrite){
+					{$this->buildJsScanFunctionBody('barcode', 'qty', 'overwrite')}
+				}
+
+JS;
+    }
+					
+    protected function buildJsScanFunctionName()
+    {
+        return $this->getButtonElement()->buildJsFunctionPrefix() . 'onScan';
+    }
+    
+    /**
+     * Returns JS code to be called once a barcode scan is detected.
+     * 
+     * Override this method to implement a scan action.
+     * 
+     * @param string $js_var_barcode
+     * @param string $js_var_qty
+     * @param string $js_var_overwrite
+     * @return string
+     */
+    protected abstract function buildJsScanFunctionBody($js_var_barcode, $js_var_qty, $js_var_overwrite);
+    
+    /**
+     * Initializes the listener for scan events coming from keyboard scanners
+     * (e.g. build-in, bluetooth or USB scanners).
+     * 
+     * @return string
+     */
+    protected function buildJsInitScannerDetection()
+    {
+        $input_element = $this->getInputElement();
+        
+        $js = "
+
+                $(document)." . ($this->getTemplate()->is('exface.JQueryMobileTemplate') ? "on('pageshow', '#" . $input_element->getJqmPageId() . "'," : "ready(") . " function(){
+						$(document).scannerDetection({
+							timeBeforeScanTest: 200,
+							scanButtonLongPressThreshold: " . $this->getDetectLongpressAfterSequentialScans() . ",
+							" . ($this->getBarcodePrefixes() ? 'startChar: [' . $this->getBarcodePrefixes() . '],' : '') . "
+							" . ($this->getBarcodeSuffixes() ? 'endChar: [' . $this->getBarcodeSuffixes() . '],' : '') . "
+							avgTimeByChar: 40,
+							scanButtonKeyCode: 116,
+							startChar: [120],
+							ignoreIfFocusOn: 'input',
+							onComplete:	{$this->buildJsScanFunctionName()},
+							//onScanButtonLongPressed: showKeyPad,
+							//onReceive: function(string){console.log(string);}
+					});
+				});
+
+";
+        
+        if ($this->getTemplate()->is('exface.JQueryMobileTemplate')) {
+            $js .= "
+				$(document).on('pagehide', '#" . $input_element->getJqmPageId() . "', function(){
+					$(document).scannerDetection(false);
+				});
+				";
+        }
+        
+        return $js;
+    }
+
+    /**
+     * Initializes the camera/image scanner
+     * 
+     * @return string
+     */
+    protected function buildJsInitQuagga()
     {
         $result = '';
         $button = $this->getApp()->getWorkbench()->ui()->getTemplate()->getElement($this->getCalledByWidget());
@@ -263,8 +552,8 @@ $(function() {
 				inputStream: {
 	                type : "LiveStream",
 	                constraints: {
-	                    width: {$this->getViewfinderWidth()},
-	                    height: {$this->getViewfinderHeight()},
+	                    width: {$this->getCameraViewfinderWidth()},
+	                    height: {$this->getCameraViewfinderHeight()},
 	                    facingMode: "{$camera}"
 	                }
 	            },
@@ -316,13 +605,6 @@ $(function() {
                 Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 3});
             }
         }
-    });
-
-    Quagga.onDetected(function(result) {    		
-    	if (result.codeResult.code){
-			$('#scanner_input').val(result.codeResult.code);
-    		$('#livestream_scanner').modal('hide');
-    	}
     });
 
     Quagga.onDetected(function(result) {    		

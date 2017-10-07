@@ -150,7 +150,7 @@ abstract class AbstractScanAction extends CustomTemplateScript
      */
     public function setUseKeyboardScanner($value)
     {
-        $this->use_keyboard_scanner = BooleanDataType::parse($value);
+        $this->use_keyboard_scanner = BooleanDataType::cast($value);
         return $this;
     }
 
@@ -172,7 +172,7 @@ abstract class AbstractScanAction extends CustomTemplateScript
      */
     public function setUseFileUpload($value)
     {
-        $this->use_file_upload = BooleanDataType::parse($value);
+        $this->use_file_upload = BooleanDataType::cast($value);
         return $this;
     }
 
@@ -194,7 +194,7 @@ abstract class AbstractScanAction extends CustomTemplateScript
      */
     public function setUseCamera($value)
     {
-        $this->use_camera = BooleanDataType::parse($value);
+        $this->use_camera = BooleanDataType::cast($value);
         return $this;
     }
 
@@ -230,7 +230,7 @@ abstract class AbstractScanAction extends CustomTemplateScript
 
     public function setSwitchCamera($value)
     {
-        $this->switch_camera = BooleanDataType::parse($value);
+        $this->switch_camera = BooleanDataType::cast($value);
         return $this;
     }
 

@@ -1,56 +1,63 @@
 <?php
 namespace exface\BarcodeScanner\Actions;
 
+/**
+ * Places the scanned code in the quick search of the parent widget and performs a search.
+ * 
+ * If the search returns a single result, the corresponding context menu is triggered automatically.
+ *
+ * @author Andrej Kabachnik
+ *
+ */
 class ScanToQuickSearch extends AbstractScanAction
 {
-
-    public function printHelperFunctions()
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\BarcodeScanner\Actions\AbstractScanAction::buildJsScanFunctionBody()
+     */
+    protected function buildJsScanFunctionBody($js_var_barcode, $js_var_qty, $js_var_overwrite)
     {
-        $table = $this->getTemplate()->getElement($this->getCalledByWidget()->getInputWidget());
-        if ($this->getTemplate()->is('exface.JQueryMobile')) {
-            $document_event = "on('pageshow', '#" . $table->getJqmPageId() . "',";
-            $single_result_action_script = "{$table->getId()}_table.row(0).nodes().to$().trigger('taphold');";
+        $input_element_id = $this->getInputElement()->getId();
+        return "
+
+                                $('#" . $input_element_id . "_quickSearch').val(" . $js_var_barcode . "); 
+								{$this->buildJsSingleResultHandler()} 
+								{$this->getInputElement()->buildJsRefresh()}; 
+
+";
+    }
+    
+    /**
+     * Returns a JS script triggering the context menu on the result row if there is only a single search result.
+     * 
+     * @return string
+     */
+    protected function buildJsSingleResultHandler()
+    {
+        $input_element_id = $this->getInputElement()->getId();
+        
+        if ($this->getTemplate()->is('exface.JQueryMobileTemplate')) {
+            $js = "{$input_element_id}_table.row(0).nodes().to$().trigger('taphold');";
         } else {
-            $document_event = "ready(";
-            $single_result_action_script = "
-				var pos = {$table->getId()}_table.row(0).nodes().to$().position();
+            $js = "
+				var pos = {$input_element_id}_table.row(0).nodes().to$().position();
 				var e = new jQuery.Event('contextmenu')
 				e.pageX = Math.floor(window.innerWidth/2);
 				e.pageY = pos.top + 120;
-				{$table->getId()}_table.row(0).nodes().to$().trigger(e);
+				{$input_element_id}_table.row(0).nodes().to$().trigger(e);
 			";
         }
-        $output = $this->buildJsCameraInit() . "
-				$(document)." . $document_event . " function(){
-					$(document).scannerDetection({
-							timeBeforeScanTest: 200,
-							avgTimeByChar: 40,
-							scanButtonKeyCode: 116,
-							endChar: [9,13],
-							startChar: [120],
-							ignoreIfFocusOn: 'input',
-							onComplete:	function(barcode, qty){
-								$('#" . $table->getId() . "_quickSearch').val(barcode); 
-								$('#{$table->getId()}').one('draw.dt', function(){ 
-									if ({$table->getId()}_table.rows()[0].length === 1){
-										{$single_result_action_script} 
-									}
-								});
-								{$table->getId()}_table.draw(); 
-							}
-					});
-				});								
-				";
         
-        if ($this->getTemplate()->is('exface.JQueryMobile')) {
-            $output .= "
-				$(document).on('pagehide', '#" . $table->getJqmPageId() . "', function(){
-					$(document).scannerDetection(false);
-				});
-				";
-        }
+        $js = "
+                                $('#{$input_element_id}').one('draw.dt', function(){ 
+								    if ({$input_element_id}_table.rows()[0].length === 1){
+                                        $js;
+								    }
+							    });
+";
         
-        return $output;
+        return $js;
     }
 }
 ?>

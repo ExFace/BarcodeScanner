@@ -43,7 +43,7 @@ class ScanToFilter extends ScanToQuickSearch
     {
         return "
 
-                                " . $this->getTemplate()->getElementByWidgetId($this->getFilterId(), $this->getCalledByWidget()->getPage()->getId())->buildJsValueSetter($js_var_barcode) . "; 
+                                " . $this->getTemplate()->getElementByWidgetId($this->getFilterId(), $this->getCalledByWidget()->getPage())->buildJsValueSetter($js_var_barcode) . "; 
 								{$this->buildJsSingleResultHandler()}
 								{$this->getInputElement()->buildJsRefresh()}; 
 

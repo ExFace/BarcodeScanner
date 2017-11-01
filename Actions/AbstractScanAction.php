@@ -40,7 +40,7 @@ abstract class AbstractScanAction extends CustomTemplateScript
     protected function init()
     {
         $this->setScriptLanguage('javascript');
-        $this->setIconName(Icons::BARCODE);
+        $this->setIcon(Icons::BARCODE);
         $this->setName($this->getApp()->getTranslator()->Translate('ACTION.DEFAULT_NAME'));
     }
     

@@ -278,7 +278,7 @@ abstract class AbstractScanAction extends CustomTemplateScript
      */
     protected function getInputElement()
     {
-        $element = $this->getTemplate()->getElement($this->getCalledByWidget()->getInputWidget());
+        $element = $this->getTemplate()->getElement($this->getTriggerWidget()->getInputWidget());
         if (! ($element instanceof AbstractJqueryElement)){
             throw new ActionConfigurationError($this, 'Template "' . $this->getTemplate()->getAlias() . '" not supported! The BarcodeScanner actions only work with templates based on AbstractJqueryElements.');
         }
@@ -291,7 +291,7 @@ abstract class AbstractScanAction extends CustomTemplateScript
      */
     protected function getButtonElement()
     {
-        $element = $this->getTemplate()->getElement($this->getCalledByWidget());
+        $element = $this->getTemplate()->getElement($this->getTriggerWidget());
         if (! ($element instanceof AbstractJqueryElement)){
             throw new ActionConfigurationError($this, 'Template "' . $this->getTemplate()->getAlias() . '" not supported! The BarcodeScanner actions only work with templates based on AbstractJqueryElements.');
         }
@@ -384,7 +384,7 @@ JS;
     protected function buildJsInitQuagga()
     {
         $result = '';
-        $button = $this->getApp()->getWorkbench()->ui()->getTemplate()->getElement($this->getCalledByWidget());
+        $button = $this->getApp()->getWorkbench()->ui()->getTemplate()->getElement($this->getTriggerWidget());
         
         $readers = explode(',', $this->getBarcodeTypes());
         for ($i = 0; $i < count($readers); $i ++) {

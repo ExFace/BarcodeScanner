@@ -54,7 +54,7 @@ class ScanToCount extends ScanToSelect
 
     public function buildScriptHelperFunctions()
     {
-        $table = $this->getTemplate()->getElement($this->getTriggerWidget()->getInputWidget());
+        $table = $this->getTemplate()->getElement($this->getWidgetDefinedIn()->getInputWidget());
         return parent::buildScriptHelperFunctions() . "				
 				$('#" . $table->getId() . "').on( 'draw.dt', function () {
 					" . $table->getId() . "_table.column('" . $this->getIncrementValueInColumnId() . ":name').nodes().to$().numpad();

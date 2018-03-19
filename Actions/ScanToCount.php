@@ -1,6 +1,9 @@
 <?php
 namespace exface\BarcodeScanner\Actions;
 
+use exface\Core\Interfaces\Templates\TemplateInterface;
+use exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement;
+
 class ScanToCount extends ScanToSelect
 {
 
@@ -28,7 +31,7 @@ class ScanToCount extends ScanToSelect
         return $this;
     }
     
-    protected function buildJsSelectByIndex($js_var_rowIdx, $js_var_barcode, $js_var_qty, $js_var_overwrite)
+    protected function buildJsSelectByIndex(AbstractJqueryElement $inputElement, $js_var_rowIdx, $js_var_barcode, $js_var_qty, $js_var_overwrite)
     {
         return "
 
@@ -52,10 +55,10 @@ class ScanToCount extends ScanToSelect
 ";
     }
 
-    public function buildScriptHelperFunctions()
+    public function buildScriptHelperFunctions(TemplateInterface $template) : string
     {
-        $table = $this->getTemplate()->getElement($this->getWidgetDefinedIn()->getInputWidget());
-        return parent::buildScriptHelperFunctions() . "				
+        $table = $template->getElement($this->getWidgetDefinedIn()->getInputWidget());
+        return parent::buildScriptHelperFunctions($template) . "				
 				$('#" . $table->getId() . "').on( 'draw.dt', function () {
 					" . $table->getId() . "_table.column('" . $this->getIncrementValueInColumnId() . ":name').nodes().to$().numpad();
 				} );

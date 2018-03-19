@@ -1,6 +1,9 @@
 <?php
 namespace exface\BarcodeScanner\Actions;
 
+use exface\Core\Interfaces\Templates\TemplateInterface;
+use exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement;
+
 /**
  * Places the scanned code in the quick search of the parent widget and performs a search.
  * 
@@ -16,14 +19,14 @@ class ScanToQuickSearch extends AbstractScanAction
      * {@inheritDoc}
      * @see \exface\BarcodeScanner\Actions\AbstractScanAction::buildJsScanFunctionBody()
      */
-    protected function buildJsScanFunctionBody($js_var_barcode, $js_var_qty, $js_var_overwrite)
+    protected function buildJsScanFunctionBody(TemplateInterface $template, $js_var_barcode, $js_var_qty, $js_var_overwrite) : string
     {
-        $input_element_id = $this->getInputElement()->getId();
+        $input_element = $this->getInputElement($template);
         return "
 
-                                $('#" . $input_element_id . "_quickSearch').val(" . $js_var_barcode . "); 
-								{$this->buildJsSingleResultHandler()} 
-								{$this->getInputElement()->buildJsRefresh()}; 
+                                $('#" . $input_element->getId() . "_quickSearch').val(" . $js_var_barcode . "); 
+								{$this->buildJsSingleResultHandler($input_element)} 
+								{$input_element->buildJsRefresh()}; 
 
 ";
     }
@@ -33,11 +36,11 @@ class ScanToQuickSearch extends AbstractScanAction
      * 
      * @return string
      */
-    protected function buildJsSingleResultHandler()
+    protected function buildJsSingleResultHandler(AbstractJqueryElement $inputElement) : string
     {
-        $input_element_id = $this->getInputElement()->getId();
+        $input_element_id = $inputElement->getId();
         
-        if ($this->getTemplate()->is('exface.JQueryMobileTemplate')) {
+        if ($inputElement->getTemplate()->is('exface.JQueryMobileTemplate')) {
             $js = "{$input_element_id}_table.row(0).nodes().to$().trigger('taphold');";
         } else {
             $js = "

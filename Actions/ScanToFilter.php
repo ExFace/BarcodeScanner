@@ -2,6 +2,7 @@
 namespace exface\BarcodeScanner\Actions;
 
 use exface\Core\Exceptions\Actions\ActionConfigurationError;
+use exface\Core\Interfaces\Templates\TemplateInterface;
 
 /**
  * Places the scanned code in the filter widget specified by the filter_id property and performs a search.
@@ -39,13 +40,14 @@ class ScanToFilter extends ScanToQuickSearch
         return $this;
     }
     
-    protected function buildJsScanFunctionBody($js_var_barcode, $js_var_qty, $js_var_overwrite)
+    protected function buildJsScanFunctionBody(TemplateInterface $template, $js_var_barcode, $js_var_qty, $js_var_overwrite) : string
     {
+        $inputElement = $this->getInputElement($template);
         return "
 
-                                " . $this->getTemplate()->getElementByWidgetId($this->getFilterId(), $this->getWidgetDefinedIn()->getPage())->buildJsValueSetter($js_var_barcode) . "; 
-								{$this->buildJsSingleResultHandler()}
-								{$this->getInputElement()->buildJsRefresh()}; 
+                                " . $template->getElementByWidgetId($this->getFilterId(), $this->getWidgetDefinedIn()->getPage())->buildJsValueSetter($js_var_barcode) . "; 
+								{$this->buildJsSingleResultHandler($inputElement)}
+								{$inputElement->buildJsRefresh()}; 
 
 ";
     }

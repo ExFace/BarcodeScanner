@@ -2,6 +2,8 @@
 namespace exface\BarcodeScanner\Actions;
 
 use exface\Core\Exceptions\Actions\ActionConfigurationError;
+use exface\Core\Interfaces\Templates\TemplateInterface;
+use exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement;
 
 /**
  * Selects the data item(s) having the scanned code in the specified column.
@@ -30,13 +32,14 @@ class ScanToSelect extends AbstractScanAction
         return $this;
     }
 
-    protected function buildJsScanFunctionBody($js_var_barcode, $js_var_qty, $js_var_overwrite)
+    protected function buildJsScanFunctionBody(TemplateInterface $template, $js_var_barcode, $js_var_qty, $js_var_overwrite)
     {
         // TODO Make it possible to specify, which column to use for comparison - currently it is always the next column to the right
+        $inputElement = $this->getInputElement($template);
         return "
 
                     var scannedString = " . $js_var_barcode . ";
-					var table = " . $this->getInputElement()->getId() . "_table;
+					var table = " . $inputElement->getId() . "_table;
 					var rowIdx = -1;
 					var split = 1;
 					// Find the row with the barcode scanned. If not found, it might also be possible, that the scanned string
@@ -53,9 +56,9 @@ class ScanToSelect extends AbstractScanAction
 					}
 													
 					if (rowIdx == -1){
-						{$this->getInputElement()->buildJsShowMessageError("'Barcode \"' + scannedString + '\" not found!'")};
+						{$inputElement->buildJsShowMessageError("'Barcode \"' + scannedString + '\" not found!'")};
 					} else {
-						{$this->buildJsSelectByIndex('rowIdx', $js_var_barcode, $js_var_qty, $js_var_overwrite)}
+						{$this->buildJsSelectByIndex($inputElement, 'rowIdx', $js_var_barcode, $js_var_qty, $js_var_overwrite)}
 					}
 
 ";
@@ -69,7 +72,7 @@ class ScanToSelect extends AbstractScanAction
      * 
      * @return string
      */
-    protected function buildJsSelectByIndex($js_var_rowIdx, $js_var_barcode, $js_var_qty, $js_var_overwrite)
+    protected function buildJsSelectByIndex(AbstractJqueryElement $inputElement, $js_var_rowIdx, $js_var_barcode, $js_var_qty, $js_var_overwrite)
     {
         return "table.rows(" . $js_var_rowIdx . ").select();";
     }

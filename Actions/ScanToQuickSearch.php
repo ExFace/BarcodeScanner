@@ -40,7 +40,7 @@ class ScanToQuickSearch extends AbstractScanAction
     {
         $input_element_id = $inputElement->getId();
         
-        if ($inputElement->getTemplate()->is('exface.JQueryMobileTemplate')) {
+        if ($inputElement->getTemplate()->is('exface.JQueryMobileTemplate.JQueryMobileTemplate')) {
             $js = "{$input_element_id}_table.row(0).nodes().to$().trigger('taphold');";
         } else {
             $js = "

@@ -353,7 +353,7 @@ JS;
         
         $js = "
 
-                $(document)." . ($template->is('exface.JQueryMobileTemplate') ? "on('pageshow', '#" . $input_element->getJqmPageId() . "'," : "ready(") . " function(){
+                $(document)." . ($template->is('exface.JQueryMobileTemplate.JQueryMobileTemplate') ? "on('pageshow', '#" . $input_element->getJqmPageId() . "'," : "ready(") . " function(){
 						$(document).scannerDetection({
 							timeBeforeScanTest: 200,
 							scanButtonLongPressThreshold: " . $this->getDetectLongpressAfterSequentialScans() . ",
@@ -371,7 +371,7 @@ JS;
 
 ";
         
-        if ($template->is('exface.JQueryMobileTemplate')) {
+        if ($template->is('exface.JQueryMobileTemplate.JQueryMobileTemplate')) {
             $js .= "
 				$(document).on('pagehide', '#" . $input_element->getJqmPageId() . "', function(){
 					$(document).scannerDetection(false);

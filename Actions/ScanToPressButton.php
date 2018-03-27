@@ -26,7 +26,7 @@ class ScanToPressButton extends ScanToSelect
     protected function buildJsSelectByIndex(AbstractJqueryElement $inputElement, $js_var_rowIdx, $js_var_barcode, $js_var_qty, $js_var_overwrite)
     {
         if ($link = $this->getButtonWidgetLink()){
-            $call_action = $inputElement->getTemplate()->getElement($link->getWidget())->buildJsClickFunctionName() . '();';
+            $call_action = $inputElement->getTemplate()->getElement($link->getTargetWidget())->buildJsClickFunctionName() . '();';
         }
         
         return parent::buildJsSelectByIndex($inputElement, $js_var_rowIdx, $js_var_barcode, $js_var_qty, $js_var_overwrite) . $call_action;
@@ -48,12 +48,12 @@ class ScanToPressButton extends ScanToSelect
      * @uxon-property button
      * @uxon-type \exface\Core\CommonLogic\WidgetLink
      * 
-     * @param WidgetLinkInterface|UxonObject|string $widget_link_string_or_uxon
+     * @param UxonObject|string $string_or_uxon
      * @return \exface\BarcodeScanner\Actions\ScanToPressButton
      */
-    public function setButton($widget_link_string_or_uxon)
+    public function setButton($string_or_uxon)
     {
-        $this->button_widget_link = WidgetLinkFactory::createFromAnything($this->getWorkbench(), $widget_link_string_or_uxon);
+        $this->button_widget_link = WidgetLinkFactory::createFromWidget($this->getWidgetDefinedIn(), $string_or_uxon);
         return $this;
     }
 }

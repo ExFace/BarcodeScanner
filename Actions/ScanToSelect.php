@@ -32,7 +32,7 @@ class ScanToSelect extends AbstractScanAction
         return $this;
     }
 
-    protected function buildJsScanFunctionBody(TemplateInterface $template, $js_var_barcode, $js_var_qty, $js_var_overwrite)
+    protected function buildJsScanFunctionBody(TemplateInterface $template, $js_var_barcode, $js_var_qty, $js_var_overwrite) : string
     {
         // TODO Make it possible to specify, which column to use for comparison - currently it is always the next column to the right
         $inputElement = $this->getInputElement($template);

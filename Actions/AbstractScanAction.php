@@ -1,14 +1,14 @@
 <?php
 namespace exface\BarcodeScanner\Actions;
 
-use exface\Core\Actions\CustomTemplateScript;
+use exface\Core\Actions\CustomFacadeScript;
 use exface\Core\DataTypes\BooleanDataType;
 use exface\Core\CommonLogic\Constants\Icons;
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
 use exface\Core\Exceptions\Actions\ActionConfigurationError;
-use exface\Core\Interfaces\Templates\TemplateInterface;
+use exface\Core\Interfaces\Facades\FacadeInterface;
 
-abstract class AbstractScanAction extends CustomTemplateScript
+abstract class AbstractScanAction extends CustomFacadeScript
 {
     private $use_keyboard_scanner = true;
     
@@ -36,7 +36,7 @@ abstract class AbstractScanAction extends CustomTemplateScript
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Actions\CustomTemplateScript::init()
+     * @see \exface\Core\Actions\CustomFacadeScript::init()
      */
     protected function init()
     {
@@ -163,7 +163,7 @@ abstract class AbstractScanAction extends CustomTemplateScript
     /**
      * Set to TRUE to enable uploading images with barcodes to trigger the action - FALSE by default.
      * 
-     * This option strongly depends on the device and the template used. 
+     * This option strongly depends on the device and the facade used. 
      * 
      * @uxon-property use_file_upload
      * @uxon-type boolean
@@ -185,7 +185,7 @@ abstract class AbstractScanAction extends CustomTemplateScript
     /**
      * Set to TRUE to enable scanning barcodes with the built-in camera of your device - FALSE by default.
      * 
-     * This option strongly depends on the device and the template used. 
+     * This option strongly depends on the device and the facade used. 
      * 
      * @uxon-property use_camera
      * @uxon-type boolean
@@ -260,33 +260,33 @@ abstract class AbstractScanAction extends CustomTemplateScript
     /**
      * 
      * {@inheritDoc}
-     * @see \exface\Core\Actions\CustomTemplateScript::buildScriptHelperFunctions()
+     * @see \exface\Core\Actions\CustomFacadeScript::buildScriptHelperFunctions()
      */
-    public function buildScriptHelperFunctions(TemplateInterface $template) : string
+    public function buildScriptHelperFunctions(FacadeInterface $facade) : string
     {
         $output = '';
         
         if ($this->getUseCamera() || $this->getUseFileUpload()){
-            $output .= $this->buildJsInitQuagga($template);
+            $output .= $this->buildJsInitQuagga($facade);
         } 
         
         // Add ScannerDetection in any case, as the camera scanner
         // will simply trigger it (the camera behaves as a keyboard
         // scanner)
-        $output .= $this->buildJsInitScannerDetection($template);
+        $output .= $this->buildJsInitScannerDetection($facade);
         
-        return $output . $this->buildJsScanFunction($template);
+        return $output . $this->buildJsScanFunction($facade);
     }
     
     /**
      * 
      * @return AbstractJqueryElement
      */
-    protected function getInputElement(TemplateInterface $template) : AbstractJqueryElement
+    protected function getInputElement(FacadeInterface $facade) : AbstractJqueryElement
     {
-        $element = $template->getElement($this->getWidgetDefinedIn()->getInputWidget());
+        $element = $facade->getElement($this->getWidgetDefinedIn()->getInputWidget());
         if (! ($element instanceof AbstractJqueryElement)){
-            throw new ActionConfigurationError($this, 'Template "' . $template->getAlias() . '" not supported! The BarcodeScanner actions only work with templates based on AbstractJqueryElements.');
+            throw new ActionConfigurationError($this, 'Facade "' . $facade->getAlias() . '" not supported! The BarcodeScanner actions only work with facades based on AbstractJqueryElements.');
         }
         return $element;
     }
@@ -295,11 +295,11 @@ abstract class AbstractScanAction extends CustomTemplateScript
      * 
      * @return AbstractJqueryElement
      */
-    protected function getButtonElement(TemplateInterface $template) : AbstractJqueryElement
+    protected function getButtonElement(FacadeInterface $facade) : AbstractJqueryElement
     {
-        $element = $template->getElement($this->getWidgetDefinedIn());
+        $element = $facade->getElement($this->getWidgetDefinedIn());
         if (! ($element instanceof AbstractJqueryElement)){
-            throw new ActionConfigurationError($this, 'Template "' . $template->getAlias() . '" not supported! The BarcodeScanner actions only work with templates based on AbstractJqueryElements.');
+            throw new ActionConfigurationError($this, 'Facade "' . $facade->getAlias() . '" not supported! The BarcodeScanner actions only work with facades based on AbstractJqueryElements.');
         }
         return $element;
     }
@@ -313,20 +313,20 @@ abstract class AbstractScanAction extends CustomTemplateScript
      * 
      * @return string
      */
-    protected function buildJsScanFunction(TemplateInterface $template) : string
+    protected function buildJsScanFunction(FacadeInterface $facade) : string
     {
         return <<<JS
 
-				function {$this->buildJsScanFunctionName($template)}(barcode, qty, overwrite){
-					{$this->buildJsScanFunctionBody($template, 'barcode', 'qty', 'overwrite')}
+				function {$this->buildJsScanFunctionName($facade)}(barcode, qty, overwrite){
+					{$this->buildJsScanFunctionBody($facade, 'barcode', 'qty', 'overwrite')}
 				}
 
 JS;
     }
 					
-    protected function buildJsScanFunctionName(TemplateInterface $template) : string
+    protected function buildJsScanFunctionName(FacadeInterface $facade) : string
     {
-        return $this->getButtonElement($template)->buildJsFunctionPrefix() . 'onScan';
+        return $this->getButtonElement($facade)->buildJsFunctionPrefix() . 'onScan';
     }
     
     /**
@@ -339,7 +339,7 @@ JS;
      * @param string $js_var_overwrite
      * @return string
      */
-    protected abstract function buildJsScanFunctionBody(TemplateInterface $tempalte, $js_var_barcode, $js_var_qty, $js_var_overwrite) : string;
+    protected abstract function buildJsScanFunctionBody(FacadeInterface $tempalte, $js_var_barcode, $js_var_qty, $js_var_overwrite) : string;
     
     /**
      * Initializes the listener for scan events coming from keyboard scanners
@@ -347,13 +347,13 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsInitScannerDetection(TemplateInterface $template) : string
+    protected function buildJsInitScannerDetection(FacadeInterface $facade) : string
     {
-        $input_element = $this->getInputElement($template);
+        $input_element = $this->getInputElement($facade);
         
         $js = "
 
-                $(document)." . ($template->is('exface.JQueryMobileTemplate.JQueryMobileTemplate') ? "on('pageshow', '#" . $input_element->getJqmPageId() . "'," : "ready(") . " function(){
+                $(document)." . ($facade->is('exface.JQueryMobileFacade.JQueryMobileFacade') ? "on('pageshow', '#" . $input_element->getJqmPageId() . "'," : "ready(") . " function(){
 						$(document).scannerDetection({
 							timeBeforeScanTest: 200,
 							scanButtonLongPressThreshold: " . $this->getDetectLongpressAfterSequentialScans() . ",
@@ -363,7 +363,7 @@ JS;
 							scanButtonKeyCode: 116,
 							startChar: [120],
 							ignoreIfFocusOn: 'input',
-							onComplete:	{$this->buildJsScanFunctionName($template)},
+							onComplete:	{$this->buildJsScanFunctionName($facade)},
 							//onScanButtonLongPressed: showKeyPad,
 							//onReceive: function(string){console.log(string);}
 					});
@@ -371,7 +371,7 @@ JS;
 
 ";
         
-        if ($template->is('exface.JQueryMobileTemplate.JQueryMobileTemplate')) {
+        if ($facade->is('exface.JQueryMobileFacade.JQueryMobileFacade')) {
             $js .= "
 				$(document).on('pagehide', '#" . $input_element->getJqmPageId() . "', function(){
 					$(document).scannerDetection(false);
@@ -387,10 +387,10 @@ JS;
      * 
      * @return string
      */
-    protected function buildJsInitQuagga(TemplateInterface $template) : string
+    protected function buildJsInitQuagga(FacadeInterface $facade) : string
     {
         $result = '';
-        $button = $template->getElement($this->getWidgetDefinedIn());
+        $button = $facade->getElement($this->getWidgetDefinedIn());
         
         $readers = explode(',', $this->getBarcodeTypes());
         for ($i = 0; $i < count($readers); $i ++) {

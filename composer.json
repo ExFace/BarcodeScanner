@@ -1,6 +1,6 @@
 {
     "name": "ExFace/BarcodeScanner",
-    "description": "Integratoin of BarcodeScanners in most AJAX templates for ExFace",
+    "description": "Integratoin of BarcodeScanners in most AJAX facades for ExFace",
     "type": "library",
     "license": "GPL-3.0+",
     "authors": [

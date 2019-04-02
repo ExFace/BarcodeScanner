@@ -2,8 +2,8 @@
 namespace exface\BarcodeScanner\Actions;
 
 use exface\Core\Exceptions\Actions\ActionConfigurationError;
-use exface\Core\Interfaces\Templates\TemplateInterface;
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement;
+use exface\Core\Interfaces\Facades\FacadeInterface;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
 
 /**
  * Selects the data item(s) having the scanned code in the specified column.
@@ -32,10 +32,10 @@ class ScanToSelect extends AbstractScanAction
         return $this;
     }
 
-    protected function buildJsScanFunctionBody(TemplateInterface $template, $js_var_barcode, $js_var_qty, $js_var_overwrite) : string
+    protected function buildJsScanFunctionBody(FacadeInterface $facade, $js_var_barcode, $js_var_qty, $js_var_overwrite) : string
     {
         // TODO Make it possible to specify, which column to use for comparison - currently it is always the next column to the right
-        $inputElement = $this->getInputElement($template);
+        $inputElement = $this->getInputElement($facade);
         return "
 
                     var scannedString = " . $js_var_barcode . ";

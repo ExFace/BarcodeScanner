@@ -1,2 +1,2 @@
 # BarcodeScanner
-Integratoin of BarcodeScanners in most AJAX templates for ExFace
+Integratoin of BarcodeScanners in most AJAX facades for ExFace

@@ -1,8 +1,8 @@
 <?php
 namespace exface\BarcodeScanner\Actions;
 
-use exface\Core\Interfaces\Templates\TemplateInterface;
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement;
+use exface\Core\Interfaces\Facades\FacadeInterface;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
 
 /**
  * Places the scanned code in the quick search of the parent widget and performs a search.
@@ -19,9 +19,9 @@ class ScanToQuickSearch extends AbstractScanAction
      * {@inheritDoc}
      * @see \exface\BarcodeScanner\Actions\AbstractScanAction::buildJsScanFunctionBody()
      */
-    protected function buildJsScanFunctionBody(TemplateInterface $template, $js_var_barcode, $js_var_qty, $js_var_overwrite) : string
+    protected function buildJsScanFunctionBody(FacadeInterface $facade, $js_var_barcode, $js_var_qty, $js_var_overwrite) : string
     {
-        $input_element = $this->getInputElement($template);
+        $input_element = $this->getInputElement($facade);
         return "
 
                                 $('#" . $input_element->getId() . "_quickSearch').val(" . $js_var_barcode . "); 
@@ -40,7 +40,7 @@ class ScanToQuickSearch extends AbstractScanAction
     {
         $input_element_id = $inputElement->getId();
         
-        if ($inputElement->getTemplate()->is('exface.JQueryMobileTemplate.JQueryMobileTemplate')) {
+        if ($inputElement->getFacade()->is('exface.JQueryMobileFacade.JQueryMobileFacade')) {
             $js = "{$input_element_id}_table.row(0).nodes().to$().trigger('taphold');";
         } else {
             $js = "

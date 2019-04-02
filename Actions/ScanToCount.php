@@ -1,8 +1,8 @@
 <?php
 namespace exface\BarcodeScanner\Actions;
 
-use exface\Core\Interfaces\Templates\TemplateInterface;
-use exface\Core\Templates\AbstractAjaxTemplate\Elements\AbstractJqueryElement;
+use exface\Core\Interfaces\Facades\FacadeInterface;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
 
 class ScanToCount extends ScanToSelect
 {
@@ -55,10 +55,10 @@ class ScanToCount extends ScanToSelect
 ";
     }
 
-    public function buildScriptHelperFunctions(TemplateInterface $template) : string
+    public function buildScriptHelperFunctions(FacadeInterface $facade) : string
     {
-        $table = $template->getElement($this->getWidgetDefinedIn()->getInputWidget());
-        return parent::buildScriptHelperFunctions($template) . "				
+        $table = $facade->getElement($this->getWidgetDefinedIn()->getInputWidget());
+        return parent::buildScriptHelperFunctions($facade) . "				
 				$('#" . $table->getId() . "').on( 'draw.dt', function () {
 					" . $table->getId() . "_table.column('" . $this->getIncrementValueInColumnId() . ":name').nodes().to$().numpad();
 				} );

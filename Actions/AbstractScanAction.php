@@ -7,6 +7,7 @@ use exface\Core\CommonLogic\Constants\Icons;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
 use exface\Core\Exceptions\Actions\ActionConfigurationError;
 use exface\Core\Interfaces\Facades\FacadeInterface;
+use exface\Core\DataTypes\StringDataType;
 
 abstract class AbstractScanAction extends CustomFacadeScript
 {
@@ -350,11 +351,11 @@ JS;
     protected function buildJsInitScannerDetection(FacadeInterface $facade) : string
     {
         $input_element = $this->getInputElement($facade);
+        $js = '';
         
-        $js = "
+        $initJS = "
 
-                $(document)." . ($facade->is('exface.JQueryMobileFacade.JQueryMobileFacade') ? "on('pageshow', '#" . $input_element->getJqmPageId() . "'," : "ready(") . " function(){
-						$(document).scannerDetection({
+                    $(document).scannerDetection({
 							timeBeforeScanTest: 200,
 							scanButtonLongPressThreshold: " . $this->getDetectLongpressAfterSequentialScans() . ",
 							" . ($this->getBarcodePrefixes() ? 'startChar: [' . $this->getBarcodePrefixes() . '],' : '') . "
@@ -367,17 +368,44 @@ JS;
 							//onScanButtonLongPressed: showKeyPad,
 							//onReceive: function(string){console.log(string);}
 					});
-				});
 
 ";
         
-        if ($facade->is('exface.JQueryMobileFacade.JQueryMobileFacade')) {
-            $js .= "
-				$(document).on('pagehide', '#" . $input_element->getJqmPageId() . "', function(){
+        // Do some facade-specific stuff
+        switch (true) {
+            // Facades built on jQueryMobile
+            case ($facade->is('exface.JQueryMobileFacade.JQueryMobileFacade')):
+            case ($facade->is('exface.NativeDroid2Facade.NativeDroid2Facade')):
+                $js = <<<JS
+                    
+                $(document).on('pageshow', '#{$input_element->getJqmPageId()}', function(){
+                    {$initJS}
+				});
+				
+                $(document).on('pagehide', '#{$input_element->getJqmPageId()}', function(){
 					$(document).scannerDetection(false);
 				});
-				";
-        }
+                
+JS;
+            break;
+            
+            // Facades built on SAP UI5
+            case ($facade->is('exface.UI5Facade.UI5Facade')):
+                $controller = $input_element->getController();
+                $controller->addOnShowViewScript('console.log("init scanner");' . $initJS);
+                $controller->addOnHideViewScript("$(document).scannerDetection(false);");
+                break;
+            
+            // Regular jQuery facades
+            default:
+                $js = <<<JS
+                    
+                $(document).ready(function(){
+                    {$initJS}
+				});
+                
+JS;
+        }       
         
         return $js;
     }
@@ -627,5 +655,28 @@ JS;
         
         return $result;
     }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\Core\Actions\CustomFacadeScript::getIncludes()
+     */
+    public function getIncludes(FacadeInterface $facade) : array
+    {
+        $includes = [];
+        if ($this->getUseKeyboardScanner()) {
+            $includes[] = $this->buildUrlIncludePath('exface/BarcodeScanner/Facades/js/jquery.scannerdetection.js');
+        }
+        
+        return $includes;
+    }
+    
+    private function buildUrlIncludePath(string $pathRelativeToVendorFolder) : string
+    {
+        if (StringDataType::startsWith($pathRelativeToVendorFolder, 'https:', false) || StringDataType::startsWith($pathRelativeToVendorFolder, 'http:', false)) {
+            return $pathRelativeToVendorFolder;
+        } 
+        
+        return $this->getWorkbench()->getCMS()->buildUrlToInclude($pathRelativeToVendorFolder);
+    }
 }
-?>

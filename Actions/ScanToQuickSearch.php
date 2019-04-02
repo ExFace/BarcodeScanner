@@ -3,6 +3,7 @@ namespace exface\BarcodeScanner\Actions;
 
 use exface\Core\Interfaces\Facades\FacadeInterface;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
+use exface\Core\Interfaces\Widgets\iHaveQuickSearch;
 
 /**
  * Places the scanned code in the quick search of the parent widget and performs a search.
@@ -21,11 +22,16 @@ class ScanToQuickSearch extends AbstractScanAction
      */
     protected function buildJsScanFunctionBody(FacadeInterface $facade, $js_var_barcode, $js_var_qty, $js_var_overwrite) : string
     {
+        $inputWidget = $this->getWidgetDefinedIn()->getInputWidget();
+        if ($inputWidget instanceof iHaveQuickSearch) {
+            $quickSearchElement = $facade->getElement($inputWidget->getQuickSearchWidget());
+        }
         $input_element = $this->getInputElement($facade);
         return "
 
-                                $('#" . $input_element->getId() . "_quickSearch').val(" . $js_var_barcode . "); 
-								{$this->buildJsSingleResultHandler($input_element)} 
+console.log('searching!');
+                                {$quickSearchElement->buildJsValueSetter($js_var_barcode)}; 
+								{$this->buildJsSingleResultHandler($input_element)}; 
 								{$input_element->buildJsRefresh()}; 
 
 ";

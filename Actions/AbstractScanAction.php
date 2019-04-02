@@ -392,7 +392,7 @@ JS;
             // Facades built on SAP UI5
             case ($facade->is('exface.UI5Facade.UI5Facade')):
                 $controller = $input_element->getController();
-                $controller->addOnShowViewScript('console.log("init scanner");' . $initJS);
+                $controller->addOnShowViewScript($initJS);
                 $controller->addOnHideViewScript("$(document).scannerDetection(false);");
                 break;
             

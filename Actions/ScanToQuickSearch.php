@@ -29,7 +29,6 @@ class ScanToQuickSearch extends AbstractScanAction
         $input_element = $this->getInputElement($facade);
         return "
 
-console.log('searching!');
                                 {$quickSearchElement->buildJsValueSetter($js_var_barcode)}; 
 								{$this->buildJsSingleResultHandler($input_element)}; 
 								{$input_element->buildJsRefresh()}; 

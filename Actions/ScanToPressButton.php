@@ -4,7 +4,7 @@ namespace exface\BarcodeScanner\Actions;
 use exface\Core\Factories\WidgetLinkFactory;
 use exface\Core\Interfaces\Widgets\WidgetLinkInterface;
 use exface\Core\CommonLogic\UxonObject;
-use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
+use exface\Core\Interfaces\Facades\FacadeInterface;
 
 /**
  * Selects the data item(s) having the scanned code in the specified column and presses a button afterwards.
@@ -17,19 +17,14 @@ use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
 class ScanToPressButton extends ScanToSelect
 {
     private $press_button_widget_link = null;
-
-    /**
-     * 
-     * {@inheritDoc}
-     * @see \exface\BarcodeScanner\Actions\ScanToSelect::buildJsSelectByIndex()
-     */
-    protected function buildJsSelectByIndex(AbstractJqueryElement $inputElement, $js_var_rowIdx, $js_var_barcode, $js_var_qty, $js_var_overwrite)
+    
+    protected function buildJsScanFunctionBody(FacadeInterface $facade, $js_var_barcode, $js_var_qty, $js_var_overwrite) : string
     {
         if ($link = $this->getButtonWidgetLink()){
-            $call_action = $inputElement->getFacade()->getElement($link->getTargetWidget())->buildJsClickFunctionName() . '();';
+            $call_action = $this->getInputElement($facade)->getFacade()->getElement($link->getTargetWidget())->buildJsClickFunctionName() . '();';
         }
         
-        return parent::buildJsSelectByIndex($inputElement, $js_var_rowIdx, $js_var_barcode, $js_var_qty, $js_var_overwrite) . $call_action;
+        return parent::buildJsScanFunctionBody($facade, $js_var_barcode, $js_var_qty, $js_var_overwrite) . $call_action;
     }
     
     /**

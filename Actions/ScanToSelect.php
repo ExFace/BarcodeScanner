@@ -4,6 +4,7 @@ namespace exface\BarcodeScanner\Actions;
 use exface\Core\Exceptions\Actions\ActionConfigurationError;
 use exface\Core\Interfaces\Facades\FacadeInterface;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
+use exface\Core\Exceptions\Actions\ActionRuntimeError;
 
 /**
  * Selects the data item(s) having the scanned code in the specified column.
@@ -34,48 +35,20 @@ class ScanToSelect extends AbstractScanAction
 
     protected function buildJsScanFunctionBody(FacadeInterface $facade, $js_var_barcode, $js_var_qty, $js_var_overwrite) : string
     {
-        // TODO Make it possible to specify, which column to use for comparison - currently it is always the next column to the right
         $inputElement = $this->getInputElement($facade);
+        if (method_exists($inputElement, 'buildJsSelectRowByValue') === false) {
+            $errorText = 'Cannot use selecting scan actions with facade element "' . get_class($inputElement) . '": missing method buildJsSelectRowByValue()!';
+            $this->getWorkbench()->getLogger()->logException(new ActionRuntimeError($this, $errorText));
+            return "console.error('{$errorText}')";
+        }
+        
+        $col = $inputElement->getWidget()->getColumnByAttributeAlias($this->getSearchBarcodeInColumnId());
         return "
 
                     var scannedString = " . $js_var_barcode . ";
-					var table = " . $inputElement->getId() . "_table;
-					var rowIdx = -1;
-					var split = 1;
-					// Find the row with the barcode scanned. If not found, it might also be possible, that the scanned string
-					// contains 2, 3 or more barcodes glued together, so try splitting it a look again. 
-					while (rowIdx == -1 && split <= 10){
-						if(barcode.length % split === 0){
-							if (split > 1){
-								barcode = barcode.substring(0, barcode.length / split);
-							}
-							rowIdx = table.column('" . $this->getSearchBarcodeInColumnId() . ":name').data().indexOf(barcode);
-						}
-						if (rowIdx > -1) " . $js_var_qty . " = " . $js_var_qty . " + split - 1;
-						split++;
-					}
-													
-					if (rowIdx == -1){
-						{$inputElement->buildJsShowMessageError("'Barcode \"' + scannedString + '\" not found!'")};
-					} else {
-						{$this->buildJsSelectByIndex($inputElement, 'rowIdx', $js_var_barcode, $js_var_qty, $js_var_overwrite)}
-					}
+                    {$inputElement->buildJsSelectRowByValue($col, 'scannedString', $inputElement->buildJsShowMessageError("'Barcode \"' + scannedString + '\" not found!'"))}
 
 ";
             
     }
-    
-    /**
-     * Returns a JS script that should perform the selection of item identified by the passed JS variable.
-     * 
-     * By default, the corresponding row is selected.
-     * 
-     * @return string
-     */
-    protected function buildJsSelectByIndex(AbstractJqueryElement $inputElement, $js_var_rowIdx, $js_var_barcode, $js_var_qty, $js_var_overwrite)
-    {
-        return "table.rows(" . $js_var_rowIdx . ").select();";
-    }
-
 }
-?>

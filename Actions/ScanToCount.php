@@ -3,6 +3,7 @@ namespace exface\BarcodeScanner\Actions;
 
 use exface\Core\Interfaces\Facades\FacadeInterface;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
+use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDataTablesTrait;
 
 class ScanToCount extends ScanToSelect
 {
@@ -31,37 +32,51 @@ class ScanToCount extends ScanToSelect
         return $this;
     }
     
-    protected function buildJsSelectByIndex(AbstractJqueryElement $inputElement, $js_var_rowIdx, $js_var_barcode, $js_var_qty, $js_var_overwrite)
+    protected function buildJsScanFunctionBody(FacadeInterface $facade, $js_var_barcode, $js_var_qty, $js_var_overwrite) : string
     {
-        return "
+        // TODO Make it possible to specify, which column to use for comparison - currently it is always the next column to the right
+        $tableElement = $this->getInputElement($facade);
+        $js = parent::buildJsScanFunctionBody($facade, $js_var_barcode, $js_var_qty, $js_var_overwrite) . <<<JS
 
-                        var incrementColIdx = table.column('" . $this->getIncrementValueInColumnId() . ":name').index();
-						var row = table.row(" . $js_var_rowIdx . ").nodes().to$();
-						var cell = table.cell({row: " . $js_var_rowIdx . ", column: incrementColIdx});
-						row.trigger('click');
-						row.addClass('selected');
-						$('html, body').animate({ scrollTop: row.offset().top-80 }, 200);
-						cell.nodes().to$().fadeOut(200, function(){ $(this).fadeIn(120); });
-						if (" . $js_var_overwrite . " || !cell.data()){
-							cell.data(" . $js_var_qty . ");
-						} else {
-							cell.data(parseInt(cell.data()) + " . $js_var_qty . ");
-						}
-						var diff = table.cell({row: " . $js_var_rowIdx . ", column: incrementColIdx+1}).data() - table.cell({row: " . $js_var_rowIdx . ", column: incrementColIdx}).data();
-						if(diff === 0) cell.nodes().to$().removeClass('warning').removeClass('error').addClass('ok');
-						else if(diff < 0) cell.nodes().to$().removeClass('ok').removeClass('error').addClass('warning');
-						else if(diff > 0) cell.nodes().to$().removeClass('warning').removeClass('ok').addClass('error');
+        /*
+        var table = {$tableElement->getId()}_table;
+        var incrementColIdx = table.column('{$this->getIncrementValueInColumnId()}:name').index();
+		var row = table.row(rowIdx).nodes().to$();
+		var cell = table.cell({row: rowIdx, column: incrementColIdx});
+		cell.nodes().to$().fadeOut(200, function(){ $(this).fadeIn(120); });
+		if ({$js_var_overwrite} || !cell.data()){
+			cell.data({$js_var_qty});
+		} else {
+			cell.data(parseInt(cell.data()) + {$js_var_qty});
+		}
+		var diff = table.cell({row: rowIdx, column: incrementColIdx+1}).data() - table.cell({row: rowIdx, column: incrementColIdx}).data();
+		if(diff === 0) cell.nodes().to$().removeClass('warning').removeClass('error').addClass('ok');
+		else if(diff < 0) cell.nodes().to$().removeClass('ok').removeClass('error').addClass('warning');
+		else if(diff > 0) cell.nodes().to$().removeClass('warning').removeClass('ok').addClass('error');
+        */
 
-";
+        var valOld = {$tableElement->buildJsValueGetter($this->getIncrementValueInColumnId())};
+        var valNew;
+        if ({$js_var_overwrite} || !valOld){
+			valNew = {$js_var_qty};
+		} else {
+			valNew = parseInt(valOld) + {$js_var_qty};
+		}
+        console.log('counting: ', valOld, valNew);
+        void {$tableElement->buildJsValueSetter('valNew', $this->getIncrementValueInColumnId())};
+
+JS;
+        
+        return $js;
     }
 
     public function buildScriptHelperFunctions(FacadeInterface $facade) : string
     {
         $table = $facade->getElement($this->getWidgetDefinedIn()->getInputWidget());
         return parent::buildScriptHelperFunctions($facade) . "				
-				$('#" . $table->getId() . "').on( 'draw.dt', function () {
+				/*$('#" . $table->getId() . "').on( 'draw.dt', function () {
 					" . $table->getId() . "_table.column('" . $this->getIncrementValueInColumnId() . ":name').nodes().to$().numpad();
-				} );
+				} );*/
 				";
     }
 }

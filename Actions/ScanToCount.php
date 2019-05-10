@@ -2,82 +2,117 @@
 namespace exface\BarcodeScanner\Actions;
 
 use exface\Core\Interfaces\Facades\FacadeInterface;
-use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
-use exface\Core\Facades\AbstractAjaxFacade\Elements\JqueryDataTablesTrait;
 
+/**
+ * This action will increment a numeric value in a data column with every scan.
+ * 
+ * It is supposed to be used with data widgets. The widget must have a column
+ * containing scancodes and another column with corresponding values. With every
+ * scan, the value corresponding to the scanned barcode will be incremented
+ * by `value_increment` (1 by default).
+ * 
+ * Here is an example:
+ * 
+ * ```
+ * {
+ *  "widget_type": "DataTable",
+ *  "columns": [
+ *      {"attribute_alias": "barcode"},
+ *      {"attribute_alias": "counter"}
+ *  ],
+ *  "buttons": [
+ *      {
+ *          "hidden": true,
+ *          "action": {
+ *              "alias": "exface.BarcodeScanner.ScanToCount",
+ *              "scancode_attribute_alias": "barcode",
+ *              "value_attribute_alias": "counter"
+ *          }
+ *      }
+ *  ]
+ * }
+ * 
+ * ```
+ * 
+ * @author Andrej Kabachnik
+ *
+ */
 class ScanToCount extends ScanToSelect
 {
 
-    private $increment_value_in_column_id = '';
+    private $value_attribute_alias = '';
+    
+    private $value_increment = 1;
 
-    public function getIncrementValueInColumnId()
+    public function getValueAttributeAlias()
     {
-        return $this->increment_value_in_column_id;
+        return $this->value_attribute_alias;
     }
 
     /**
-     * Id or name of the column, that contains the counted values.
+     * Alias of the attribute to count (or a data column name).
      * 
      * Each scan will increase the number in that column by the scan quantity.
      * 
-     * @uxon-property increment_value_in_column_id
-     * @uxon-type string
+     * @uxon-property value_attribute_alias
+     * @uxon-type metamodel:attribute
      * 
      * @param string $value
      * @return \exface\BarcodeScanner\Actions\ScanToCount
      */
-    public function setIncrementValueInColumnId($value)
+    public function setValueAttributeAlias(string $value)
     {
-        $this->increment_value_in_column_id = $value;
+        $this->value_attribute_alias = $value;
         return $this;
     }
     
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \exface\BarcodeScanner\Actions\ScanToSelect::buildJsScanFunctionBody()
+     */
     protected function buildJsScanFunctionBody(FacadeInterface $facade, $js_var_barcode, $js_var_qty, $js_var_overwrite) : string
     {
         // TODO Make it possible to specify, which column to use for comparison - currently it is always the next column to the right
         $tableElement = $this->getInputElement($facade);
         $js = parent::buildJsScanFunctionBody($facade, $js_var_barcode, $js_var_qty, $js_var_overwrite) . <<<JS
 
-        /*
-        var table = {$tableElement->getId()}_table;
-        var incrementColIdx = table.column('{$this->getIncrementValueInColumnId()}:name').index();
-		var row = table.row(rowIdx).nodes().to$();
-		var cell = table.cell({row: rowIdx, column: incrementColIdx});
-		cell.nodes().to$().fadeOut(200, function(){ $(this).fadeIn(120); });
-		if ({$js_var_overwrite} || !cell.data()){
-			cell.data({$js_var_qty});
-		} else {
-			cell.data(parseInt(cell.data()) + {$js_var_qty});
-		}
-		var diff = table.cell({row: rowIdx, column: incrementColIdx+1}).data() - table.cell({row: rowIdx, column: incrementColIdx}).data();
-		if(diff === 0) cell.nodes().to$().removeClass('warning').removeClass('error').addClass('ok');
-		else if(diff < 0) cell.nodes().to$().removeClass('ok').removeClass('error').addClass('warning');
-		else if(diff > 0) cell.nodes().to$().removeClass('warning').removeClass('ok').addClass('error');
-        */
-
-        var valOld = {$tableElement->buildJsValueGetter($this->getIncrementValueInColumnId())};
+        var valOld = {$tableElement->buildJsValueGetter($this->getValueAttributeAlias())};
         var valNew;
         if ({$js_var_overwrite} || !valOld){
-			valNew = {$js_var_qty};
+			valNew = {$js_var_qty} * ({$this->getValueIncrement()});
 		} else {
-			valNew = parseInt(valOld) + {$js_var_qty};
+			valNew = parseInt(valOld) + {$js_var_qty} * ({$this->getValueIncrement()});
 		}
         console.log('counting: ', valOld, valNew);
-        void {$tableElement->buildJsValueSetter('valNew', $this->getIncrementValueInColumnId())};
+        void {$tableElement->buildJsValueSetter('valNew', $this->getValueAttributeAlias())};
 
 JS;
         
         return $js;
     }
-
-    public function buildScriptHelperFunctions(FacadeInterface $facade) : string
+    
+    /**
+     * 
+     * @return float
+     */
+    public function getValueIncrement() : float
     {
-        $table = $facade->getElement($this->getWidgetDefinedIn()->getInputWidget());
-        return parent::buildScriptHelperFunctions($facade) . "				
-				/*$('#" . $table->getId() . "').on( 'draw.dt', function () {
-					" . $table->getId() . "_table.column('" . $this->getIncrementValueInColumnId() . ":name').nodes().to$().numpad();
-				} );*/
-				";
+        return $this->value_increment;
+    }
+    
+    /**
+     * 
+     * @uxon-property value_increment
+     * @uxon-type number
+     * @uxon-default 1
+     * 
+     * @param float $value
+     * @return ScanToCount
+     */
+    public function setValueIncrement($value) : ScanToCount
+    {
+        $this->value_increment = $value;
+        return $this;
     }
 }
-?>

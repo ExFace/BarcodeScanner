@@ -8,6 +8,7 @@ use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
 use exface\Core\Exceptions\Actions\ActionConfigurationError;
 use exface\Core\Interfaces\Facades\FacadeInterface;
 use exface\Core\DataTypes\StringDataType;
+use exface\Core\Interfaces\WidgetInterface;
 
 abstract class AbstractScanAction extends CustomFacadeScript
 {
@@ -281,11 +282,20 @@ abstract class AbstractScanAction extends CustomFacadeScript
     
     /**
      * 
+     * @return WidgetInterface
+     */
+    protected function getInputWidget() : WidgetInterface
+    {
+        return $this->getWidgetDefinedIn()->getInputWidget();
+    }
+    
+    /**
+     * 
      * @return AbstractJqueryElement
      */
     protected function getInputElement(FacadeInterface $facade) : AbstractJqueryElement
     {
-        $element = $facade->getElement($this->getWidgetDefinedIn()->getInputWidget());
+        $element = $facade->getElement($this->getInputWidget());
         if (! ($element instanceof AbstractJqueryElement)){
             throw new ActionConfigurationError($this, 'Facade "' . $facade->getAlias() . '" not supported! The BarcodeScanner actions only work with facades based on AbstractJqueryElements.');
         }

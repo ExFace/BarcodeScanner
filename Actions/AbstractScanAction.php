@@ -362,10 +362,10 @@ JS;
     {
         $input_element = $this->getInputElement($facade);
         $js = '';
-        
+
         $initJS = "
 
-                    $(document).scannerDetection({
+                    scannerDetector.attachTo(document, {
 							timeBeforeScanTest: 200,
 							scanButtonLongPressThreshold: " . $this->getDetectLongpressAfterSequentialScans() . ",
 							" . ($this->getBarcodePrefixes() ? 'startChar: [' . $this->getBarcodePrefixes() . '],' : '') . "
@@ -374,13 +374,13 @@ JS;
 							scanButtonKeyCode: 116,
 							startChar: [120],
 							ignoreIfFocusOn: 'input',
-							onComplete:	{$this->buildJsScanFunctionName($facade)},
+							onScan:	{$this->buildJsScanFunctionName($facade)},
 							//onScanButtonLongPressed: showKeyPad,
 							//onReceive: function(string){console.log(string);}
 					});
-
+					
 ";
-        
+
         // Do some facade-specific stuff
         switch (true) {
             // Facades built on jQueryMobile
@@ -393,7 +393,7 @@ JS;
 				});
 				
                 $(document).on('pagehide', '#{$input_element->getJqmPageId()}', function(){
-					$(document).scannerDetection(false);
+					scannerDetector.detatchFrom(document);
 				});
                 
 JS;
@@ -403,7 +403,7 @@ JS;
             case ($facade->is('exface.UI5Facade.UI5Facade')):
                 $controller = $input_element->getController();
                 $controller->addOnShowViewScript($initJS);
-                $controller->addOnHideViewScript("$(document).scannerDetection(false);");
+                $controller->addOnHideViewScript("scannerDetection.detatchFrom(document);");
                 break;
             
             // Regular jQuery facades
@@ -653,7 +653,7 @@ $(function() {
 
     Quagga.onDetected(function(result) {    		
     	if (result.codeResult.code){
-    		$(document).scannerDetection(result.codeResult.code);
+    		scannerDetection.simulate(document, result.codeResult.code);
     		window.scrollTo(0, 0);
     		$('#{$button->getId()}_scanner').modal('hide');
     	}
@@ -675,7 +675,7 @@ JS;
     {
         $includes = [];
         if ($this->getUseKeyboardScanner()) {
-            $includes[] = $this->buildUrlIncludePath('exface/BarcodeScanner/Facades/js/jquery.scannerdetection.js');
+            $includes[] = $this->buildUrlIncludePath('exface/BarcodeScanner/Facades/js/onscan.js');
         }
         
         return $includes;

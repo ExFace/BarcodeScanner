@@ -272,7 +272,7 @@ abstract class AbstractScanAction extends CustomFacadeScript
             $output .= $this->buildJsInitQuagga($facade);
         } 
         
-        // Add ScannerDetection in any case, as the camera scanner
+        // Add ScannerDetector in any case, as the camera scanner
         // will simply trigger it (the camera behaves as a keyboard
         // scanner)
         $output .= $this->buildJsInitScannerDetection($facade);
@@ -403,7 +403,7 @@ JS;
             case ($facade->is('exface.UI5Facade.UI5Facade')):
                 $controller = $input_element->getController();
                 $controller->addOnShowViewScript($initJS);
-                $controller->addOnHideViewScript("scannerDetection.detatchFrom(document);");
+                $controller->addOnHideViewScript("scannerDetector.detatchFrom(document);");
                 break;
             
             // Regular jQuery facades
@@ -510,7 +510,7 @@ $(function() {
             setTimeout(function() {
 			    {$button->buildJsBusyIconHide()}
 			}, 5000);
-            Quagga.decodeSingle(config, function(result) { $(document).scannerDetection(result.codeResult.code); {$button->buildJsBusyIconHide()}});
+            Quagga.decodeSingle(config, function(result) { $(document).scannerDetector(result.codeResult.code); {$button->buildJsBusyIconHide()}});
         },
         setState: function(path, value) {
             var self = this;
@@ -653,7 +653,7 @@ $(function() {
 
     Quagga.onDetected(function(result) {    		
     	if (result.codeResult.code){
-    		scannerDetection.simulate(document, result.codeResult.code);
+    		scannerDetector.simulate(document, result.codeResult.code);
     		window.scrollTo(0, 0);
     		$('#{$button->getId()}_scanner').modal('hide');
     	}

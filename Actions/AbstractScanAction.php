@@ -678,6 +678,10 @@ JS;
             $includes[] = $this->buildUrlIncludePath('exface/BarcodeScanner/Facades/js/onscan.js');
         }
         
+        if ($this->getUseCamera()) {
+            $includes[] = $this->buildUrlIncludePath('bower-asset/quagga/dist/quagga.min.js');
+        }
+        
         return $includes;
     }
     

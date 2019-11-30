@@ -393,7 +393,7 @@ JS;
 				});
 				
                 $(document).on('pagehide', '#{$input_element->getJqmPageId()}', function(){
-					scannerDetector.detatchFrom(document);
+					scannerDetector.detachFrom(document);
 				});
                 
 JS;
@@ -403,7 +403,7 @@ JS;
             case ($facade->is('exface.UI5Facade.UI5Facade')):
                 $controller = $input_element->getController();
                 $controller->addOnShowViewScript($initJS);
-                $controller->addOnHideViewScript("scannerDetector.detatchFrom(document);");
+                $controller->addOnHideViewScript("scannerDetector.detachFrom(document);");
                 break;
             
             // Regular jQuery facades

@@ -32,6 +32,8 @@ abstract class AbstractScanAction extends CustomFacadeScript
     // TODO get the value from the app config as soon as configs are possible
     private $barcode_suffixes = '';
     
+    private $scanButtonKeyCode = null;
+    
     // TODO get the value from the app config as soon as configs are possible
     private $detect_longpress_after_sequential_scans = 5;
     
@@ -51,7 +53,7 @@ abstract class AbstractScanAction extends CustomFacadeScript
      * 
      * @return string
      */
-    public function getBarcodePrefixes()
+    public function getBarcodePrefixKeyCodes()
     {
         return $this->barcode_prefixes;
     }
@@ -69,7 +71,7 @@ abstract class AbstractScanAction extends CustomFacadeScript
      * @param string $value
      * @return \exface\BarcodeScanner\Actions\AbstractScanAction
      */
-    public function setBarcodePrefixes($value)
+    public function setBarcodePrefixKeyCodes($value)
     {
         $this->barcode_prefixes = $value;
         return $this;
@@ -79,7 +81,7 @@ abstract class AbstractScanAction extends CustomFacadeScript
      * 
      * @return string
      */
-    public function getBarcodeSuffixes()
+    public function getBarcodeSuffixKeyCodes()
     {
         return $this->barcode_suffixes;
     }
@@ -97,7 +99,7 @@ abstract class AbstractScanAction extends CustomFacadeScript
      * @param string $value
      * @return \exface\BarcodeScanner\Actions\AbstractScanAction
      */
-    public function setBarcodeSuffixes($value)
+    public function setBarcodeSuffixKeyCodes($value)
     {
         $this->barcode_suffixes = $value;
         return $this;
@@ -108,7 +110,7 @@ abstract class AbstractScanAction extends CustomFacadeScript
      *
      * @return int
      */
-    public function getDetectLongpressAfterSequentialScans()
+    public function getScanButtonLongPressTime()
     {
         return $this->detect_longpress_after_sequential_scans;
     }
@@ -124,7 +126,7 @@ abstract class AbstractScanAction extends CustomFacadeScript
      * @param integer $value
      * @return AbstractScanAction
      */
-    public function setDetectLongpressAfterSequentialScans($value)
+    public function setScanButtonLongPressTime($value)
     {
         $this->detect_longpress_after_sequential_scans = $value;
         return $this;
@@ -365,18 +367,13 @@ JS;
 
         $initJS = "
 
-                    scannerDetector.attachTo(document, {
-							timeBeforeScanTest: 200,
-							scanButtonLongPressThreshold: " . $this->getDetectLongpressAfterSequentialScans() . ",
-							" . ($this->getBarcodePrefixes() ? 'startChar: [' . $this->getBarcodePrefixes() . '],' : '') . "
-							" . ($this->getBarcodeSuffixes() ? 'endChar: [' . $this->getBarcodeSuffixes() . '],' : '') . "
-							avgTimeByChar: 40,
-							scanButtonKeyCode: 116,
-							startChar: [120],
+                    onScan.attachTo(document, {
+							scanButtonLongPressTime: " . $this->getScanButtonLongPressTime() . ",
+							" . ($this->getBarcodePrefixKeyCodes() ? 'prefixKeyCodes: [' . $this->getBarcodePrefixKeyCodes() . '],' : '') . "
+							" . ($this->getBarcodeSuffixKeyCodes() ? 'suffixKeyCodes: [' . $this->getBarcodeSuffixKeyCodes() . '],' : '') . "
+							" . ($this->getScanButtonKeyCode() !== null ? 'scanButtonKeyCode: ' . $this->getScanButtonKeyCode() . ',' : '') . "
 							ignoreIfFocusOn: 'input',
-							onScan:	{$this->buildJsScanFunctionName($facade)},
-							//onScanButtonLongPressed: showKeyPad,
-							//onReceive: function(string){console.log(string);}
+							onScan:	{$this->buildJsScanFunctionName($facade)}
 					});
 					
 ";
@@ -393,7 +390,7 @@ JS;
 				});
 				
                 $(document).on('pagehide', '#{$input_element->getJqmPageId()}', function(){
-					scannerDetector.detachFrom(document);
+					onScan.detachFrom(document);
 				});
                 
 JS;
@@ -403,7 +400,7 @@ JS;
             case ($facade->is('exface.UI5Facade.UI5Facade')):
                 $controller = $input_element->getController();
                 $controller->addOnShowViewScript($initJS);
-                $controller->addOnHideViewScript("scannerDetector.detachFrom(document);");
+                $controller->addOnHideViewScript("onScan.detachFrom(document);");
                 break;
             
             // Regular jQuery facades
@@ -653,7 +650,7 @@ $(function() {
 
     Quagga.onDetected(function(result) {    		
     	if (result.codeResult.code){
-    		scannerDetector.simulate(document, result.codeResult.code);
+    		onScan.simulate(document, result.codeResult.code);
     		window.scrollTo(0, 0);
     		$('#{$button->getId()}_scanner').modal('hide');
     	}
@@ -675,7 +672,7 @@ JS;
     {
         $includes = [];
         if ($this->getUseKeyboardScanner()) {
-            $includes[] = $this->buildUrlIncludePath('exface/BarcodeScanner/Facades/js/onscan.js');
+            $includes[] = $this->buildUrlIncludePath('npm-asset/onscan.js/onscan.min.js');
         }
         
         if ($this->getUseCamera()) {
@@ -692,5 +689,25 @@ JS;
         } 
         
         return $this->getWorkbench()->getCMS()->buildUrlToInclude($pathRelativeToVendorFolder);
+    }
+    
+    /**
+     *
+     * @return int
+     */
+    public function getScanButtonKeyCode() : ?int
+    {
+        return $this->scanButtonKeyCode;
+    }
+    
+    /**
+     * 
+     * @param int $value
+     * @return AbstractScanAction
+     */
+    public function setScanButtonKeyCode(int $value) : AbstractScanAction
+    {
+        $this->scanButtonKeyCode = $value;
+        return $this;
     }
 }

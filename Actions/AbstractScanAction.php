@@ -30,7 +30,9 @@ abstract class AbstractScanAction extends CustomFacadeScript
     private $barcode_prefixes = '';
     
     // TODO get the value from the app config as soon as configs are possible
-    private $barcode_suffixes = '';
+    private $barcode_suffixes = '9,13';
+    
+    private $barcodeScanEventPreventDefault = false;
     
     private $scanButtonKeyCode = null;
     
@@ -95,6 +97,7 @@ abstract class AbstractScanAction extends CustomFacadeScript
      * 
      * @uxon-property barcode_suffixes
      * @uxon-type string
+     * @uxon-default 9,13
      * 
      * @param string $value
      * @return \exface\BarcodeScanner\Actions\AbstractScanAction
@@ -368,12 +371,14 @@ JS;
         $initJS = "
 
                     onScan.attachTo(document, {
-							scanButtonLongPressTime: " . $this->getScanButtonLongPressTime() . ",
-							" . ($this->getBarcodePrefixKeyCodes() ? 'prefixKeyCodes: [' . $this->getBarcodePrefixKeyCodes() . '],' : '') . "
-							" . ($this->getBarcodeSuffixKeyCodes() ? 'suffixKeyCodes: [' . $this->getBarcodeSuffixKeyCodes() . '],' : '') . "
-							" . ($this->getScanButtonKeyCode() !== null ? 'scanButtonKeyCode: ' . $this->getScanButtonKeyCode() . ',' : '') . "
-							ignoreIfFocusOn: 'input',
-							onScan:	{$this->buildJsScanFunctionName($facade)}
+						scanButtonLongPressTime: " . $this->getScanButtonLongPressTime() . ",
+						" . ($this->getBarcodePrefixKeyCodes() ? 'prefixKeyCodes: [' . $this->getBarcodePrefixKeyCodes() . '],' : '') . "
+						" . ($this->getBarcodeSuffixKeyCodes() ? 'suffixKeyCodes: [' . $this->getBarcodeSuffixKeyCodes() . '],' : '') . "
+						" . ($this->getScanButtonKeyCode() !== null ? 'scanButtonKeyCode: ' . $this->getScanButtonKeyCode() . ',' : '') . "
+						preventDefault: " . ($this->getBarcodeScanEventPreventDefault() ? 'true' : 'false') . ",
+                        stopPropagation: " . ($this->getBarcodeScanEventPreventDefault() ? 'true' : 'false') . ",
+                        ignoreIfFocusOn: 'input',
+						onScan:	{$this->buildJsScanFunctionName($facade)}
 					});
 					
 ";
@@ -710,4 +715,34 @@ JS;
         $this->scanButtonKeyCode = $value;
         return $this;
     }
+    
+    /**
+     *
+     * @return bool
+     */
+    public function getBarcodeScanEventPreventDefault() : bool
+    {
+        return $this->barcodeScanEventPreventDefault;
+    }
+    
+    /**
+     * Set to TRUE to prevent any other things to happen when a barcode scan is detected.
+     * 
+     * For example, by default the enter-key is one of the `barcode_suffix_key_codes` and,
+     * thus, every barcode scan, will shift the focus to the next focusable control. Setting
+     * `barcode_scan_event_prevent_default` to `true` will prevent this.
+     * 
+     * @uxon-property barcode_scan_event_prevent_default
+     * @uxon-type boolean
+     * @uxon-default false
+     * 
+     * @param bool $value
+     * @return AbstractScanAction
+     */
+    public function setBarcodeScanEventPreventDefault(bool $value) : AbstractScanAction
+    {
+        $this->barcodeScanEventPreventDefault = $value;
+        return $this;
+    }
+    
 }

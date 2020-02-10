@@ -84,12 +84,23 @@ class ScanToSetValue extends AbstractScanAction
         $targetElement = $facade->getElementByWidgetId($this->getTargetWidgetId(), $this->getWidgetDefinedIn()->getPage());
         $newValueJs = $js_var_barcode;
         if ($this->getAppendValues() === true) {
-            $newValueJs = "{$targetElement->buildJsValueGetter()} + '{$this->getAppendValuesDelimiter()}' + {$newValueJs}";
+            $prependOldValJs = <<<JS
+    
+    var sOldVal = {$targetElement->buildJsValueGetter()};
+    if (sOldVal !== undefined && sOldVal !== '' && sOldVal !== null) {
+       sScanVal = sOldVal + '{$this->getAppendValuesDelimiter()}' + sScanVal; 
+    }
+JS;
+        } else {
+            $prependOldValJs = "";
         }
         return <<<JS
 
-    var sScanVal = $newValueJs;
-    {$targetElement->buildJsValueSetter('sScanVal')}
+    (function() {
+        var sScanVal = $newValueJs;
+        {$prependOldValJs}
+        {$targetElement->buildJsValueSetter('sScanVal')}
+    }());
 
 JS;
     }
@@ -100,7 +111,7 @@ JS;
      */
     public function getAppendValues() : bool
     {
-        return $this->appendValue;
+        return $this->appendValues;
     }
     
     /**
@@ -119,7 +130,7 @@ JS;
      */
     public function setAppendValues(bool $value) : ScanToSetValue
     {
-        $this->appendValue = $value;
+        $this->appendValues = $value;
         return $this;
     }
     
@@ -129,7 +140,7 @@ JS;
      */
     public function getAppendValuesDelimiter() : string
     {
-        return $this->valueDelimiter;
+        return $this->valueDelimiter ?? EXF_LIST_SEPARATOR;
     }
     
     /**
@@ -147,5 +158,4 @@ JS;
         $this->valueDelimiter = $value;
         return $this;
     }
-    
 }

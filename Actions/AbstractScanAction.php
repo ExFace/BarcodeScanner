@@ -36,6 +36,8 @@ abstract class AbstractScanAction extends CustomFacadeScript
     
     private $scanButtonKeyCode = null;
     
+    private $barcodeScanDisaledIfFocus = true;
+    
     // TODO get the value from the app config as soon as configs are possible
     private $detect_longpress_after_sequential_scans = 5;
     
@@ -375,9 +377,9 @@ JS;
 						" . ($this->getBarcodePrefixKeyCodes() ? 'prefixKeyCodes: [' . $this->getBarcodePrefixKeyCodes() . '],' : '') . "
 						" . ($this->getBarcodeSuffixKeyCodes() ? 'suffixKeyCodes: [' . $this->getBarcodeSuffixKeyCodes() . '],' : '') . "
 						" . ($this->getScanButtonKeyCode() !== null ? 'scanButtonKeyCode: ' . $this->getScanButtonKeyCode() . ',' : '') . "
+						" . ($this->getBarcodeScanDisabledIfFocusOnWidget() === true ? 'ignoreIfFocusOn: "input",' : '') . "
 						preventDefault: " . ($this->getBarcodeScanEventPreventDefault() ? 'true' : 'false') . ",
                         stopPropagation: " . ($this->getBarcodeScanEventPreventDefault() ? 'true' : 'false') . ",
-                        ignoreIfFocusOn: 'input',
 						onScan:	{$this->buildJsScanFunctionName($facade)}
 					});
 					
@@ -742,6 +744,30 @@ JS;
     public function setBarcodeScanEventPreventDefault(bool $value) : AbstractScanAction
     {
         $this->barcodeScanEventPreventDefault = $value;
+        return $this;
+    }
+    
+    public function getBarcodeScanDisabledIfFocusOnWidget() : bool
+    {
+        return $this->barcodeScanDisaledIfFocus;
+    }
+    
+    /**
+     * Set to FALSE to perform the action even if an input widget has explicit focus.
+     * 
+     * Note: by default the scanned value will appear in the focused widget and get
+     * processed by the action simultaniously.
+     * 
+     * @uxon-property barcode_scan_disabled_if_focus_on_widget
+     * @uxon-type boolean
+     * @uxon-default true
+     * 
+     * @param bool $value
+     * @return AbstractScanAction
+     */
+    public function setBarcodeScanDisabledIfFocusOnWidget(bool $value) : AbstractScanAction
+    {
+        $this->barcodeScanDisaledIfFocus = $value;
         return $this;
     }
     

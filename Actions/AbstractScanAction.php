@@ -2,44 +2,25 @@
 namespace exface\BarcodeScanner\Actions;
 
 use exface\Core\Actions\CustomFacadeScript;
-use exface\Core\DataTypes\BooleanDataType;
 use exface\Core\CommonLogic\Constants\Icons;
 use exface\Core\Facades\AbstractAjaxFacade\Elements\AbstractJqueryElement;
 use exface\Core\Exceptions\Actions\ActionConfigurationError;
 use exface\Core\Interfaces\Facades\FacadeInterface;
-use exface\Core\DataTypes\StringDataType;
 use exface\Core\Interfaces\WidgetInterface;
+use exface\BarcodeScanner\Interfaces\JsScannerWrapperInterface;
+use exface\BarcodeScanner\Actions\Scanners\OnScanJsScanner;
+use exface\BarcodeScanner\Actions\Scanners\QuaggaJsScanner;
+use exface\Core\CommonLogic\UxonObject;
+use exface\Core\Exceptions\UnexpectedValueException;
 
 abstract class AbstractScanAction extends CustomFacadeScript
 {
-    private $use_keyboard_scanner = true;
+    const SCANNER_TYPE_ONSCANJS = 'hardware';
+    const SCANNER_TYPE_QUAGGA = 'camera';
     
-    private $use_file_upload = false;
-
-    private $use_camera = false;
-
-    private $switch_camera = false;
-
-    private $viewfinder_width = '640';
-
-    private $viewfinder_height = '480';
-
-    private $barcode_types = 'ean, ean_8';
+    private $scanner = null;
     
-    // TODO get the value from the app config as soon as configs are possible
-    private $barcode_prefixes = '';
-    
-    // TODO get the value from the app config as soon as configs are possible
-    private $barcode_suffixes = '9,13';
-    
-    private $barcodeScanEventPreventDefault = false;
-    
-    private $scanButtonKeyCode = null;
-    
-    private $barcodeScanDisaledIfFocus = true;
-    
-    // TODO get the value from the app config as soon as configs are possible
-    private $detect_longpress_after_sequential_scans = 5;
+    private $scannerUxon = null;
     
     /**
      * 
@@ -54,215 +35,55 @@ abstract class AbstractScanAction extends CustomFacadeScript
     }
     
     /**
-     * 
+     *
      * @return string
      */
-    public function getBarcodePrefixKeyCodes()
+    public function getScannerType() : string
     {
-        return $this->barcode_prefixes;
+        if ($this->scanner !== null) {
+            return $this->scanner->getType();
+        } else {
+            if ($this->scannerUxon instanceof UxonObject) {
+                $value = mb_strtolower($this->scannerUxon->getProperty('type'));
+                if ($value !== self::SCANNER_TYPE_ONSCANJS && $value !== self::SCANNER_TYPE_QUAGGA) {
+                    throw new ActionConfigurationError($this, 'Invalid scanner type "' . $value . '" in action "' . $this->getAliasWithNamespace() . '"!');
+                }
+                return $value;
+            } else {
+                return self::SCANNER_TYPE_ONSCANJS;
+            }
+        }
     }
     
     /**
-     * Sets a comma-separated list of JS character codes for barcode prefixes.
      * 
-     * Prefixes are special characters, that are being sent by some scanners to mark 
-     * the end of the barcode read. Suffixes will be stripped off the end of the 
-     * barcode!
-     * 
-     * @uxon-property barcode_prefixes
-     * @uxon-type string
-     * 
-     * @param string $value
-     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
+     * @return JsScannerWrapperInterface
      */
-    public function setBarcodePrefixKeyCodes($value)
+    protected function getScanner() : JsScannerWrapperInterface
     {
-        $this->barcode_prefixes = $value;
-        return $this;
+        if ($this->scanner === null) {
+            $scannerClass = $this::getScannerClassFromType($this->getScannerType());
+            $this->scanner = new $scannerClass($this, $this->scannerUxon);
+        }
+        return $this->scanner;
     }
     
     /**
+     * Configuration for the scanner
      * 
-     * @return string
-     */
-    public function getBarcodeSuffixKeyCodes()
-    {
-        return $this->barcode_suffixes;
-    }
-    
-    /**
-     * Sets a comma-separated list of JS character codes for barcode suffixes.
+     * @uxon-property scanner
+     * @uxon-type \exface\BarcodeScanner\Actions\Scanners\AbstractJsScanner
+     * @uxon-template {"type": "hardware"}
+     * @uxon-default {"type": "hardware"}
      * 
-     * Suffixes are special characters, that are being sent by some scanners to mark 
-     * the end of the barcode read. Suffixes will be stripped off the end of the 
-     * barcode!
-     * 
-     * @uxon-property barcode_suffixes
-     * @uxon-type string
-     * @uxon-default 9,13
-     * 
-     * @param string $value
-     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
-     */
-    public function setBarcodeSuffixKeyCodes($value)
-    {
-        $this->barcode_suffixes = $value;
-        return $this;
-    }
-    
-    /**
-     * Returns the number of sequential scans, that indicate a long press of the scanner button.
-     *
-     * @return int
-     */
-    public function getScanButtonLongPressTime()
-    {
-        return $this->detect_longpress_after_sequential_scans;
-    }
-    
-    /**
-     * Sets the number of sequential scans, that indicate a long press of the scanner button.
-     * 
-     * In this case the GUI is supposed to open a number input dialog to allow the user to type the desired quantity.
-     *
-     * @uxon-property detect_longpress_after_sequential_scans
-     * @uxon-type number
-     * 
-     * @param integer $value
+     * @param UxonObject $uxon
      * @return AbstractScanAction
      */
-    public function setScanButtonLongPressTime($value)
+    public function setScanner(UxonObject $uxon) : AbstractScanAction
     {
-        $this->detect_longpress_after_sequential_scans = $value;
-        return $this;
-    }
-    
-    /**
-     * Returns TRUE if keyboard-scanners should be used and FALSE otherwise.
-     *  
-     * @return boolean
-     */
-    public function getUseKeyboardScanner()
-    {
-        return $this->use_keyboard_scanner;
-    }
-    
-    /**
-     * Set to FALSE to make the action ignore input via external scanners (built-in, bluetooth, USB, etc.).
-     * 
-     * This option is TRUE by default.
-     * 
-     * @uxon-property use_keyboard_scanner 
-     * @uxon-type boolean
-     * 
-     * @param boolean $value
-     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
-     */
-    public function setUseKeyboardScanner($value)
-    {
-        $this->use_keyboard_scanner = BooleanDataType::cast($value);
-        return $this;
-    }
-
-    public function getUseFileUpload()
-    {
-        return $this->use_file_upload;
-    }
-
-    /**
-     * Set to TRUE to enable uploading images with barcodes to trigger the action - FALSE by default.
-     * 
-     * This option strongly depends on the device and the facade used. 
-     * 
-     * @uxon-property use_file_upload
-     * @uxon-type boolean
-     * 
-     * @param boolean $value
-     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
-     */
-    public function setUseFileUpload($value)
-    {
-        $this->use_file_upload = BooleanDataType::cast($value);
-        return $this;
-    }
-
-    public function getUseCamera()
-    {
-        return $this->use_camera;
-    }
-
-    /**
-     * Set to TRUE to enable scanning barcodes with the built-in camera of your device - FALSE by default.
-     * 
-     * This option strongly depends on the device and the facade used. 
-     * 
-     * @uxon-property use_camera
-     * @uxon-type boolean
-     * 
-     * @param boolean $value
-     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
-     */
-    public function setUseCamera($value)
-    {
-        $this->use_camera = BooleanDataType::cast($value);
-        return $this;
-    }
-
-    /**
-     * Returns a comma separated list of allowed barcode types or NULL if all types are allowed.
-     * 
-     * @return string
-     */
-    public function getBarcodeTypes()
-    {
-        return $this->barcode_types;
-    }
-
-    /**
-     * Specifies a list of allowed barcode types (other barcodes will be ignored).
-     * 
-     * @uxon-property barcode_types
-     * @uxon-type string
-     * 
-     * @param string $value
-     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
-     */
-    public function setBarcodeTypes($value)
-    {
-        $this->barcode_types = $value;
-        return $this;
-    }
-
-    public function getSwitchCamera()
-    {
-        return $this->switch_camera;
-    }
-
-    public function setSwitchCamera($value)
-    {
-        $this->switch_camera = BooleanDataType::cast($value);
-        return $this;
-    }
-
-    public function getCameraViewfinderWidth()
-    {
-        return $this->viewfinder_width;
-    }
-
-    public function setCameraViewfinderWidth($value)
-    {
-        $this->viewfinder_width = $value;
-        return $this;
-    }
-
-    public function getCameraViewfinderHeight()
-    {
-        return $this->viewfinder_height;
-    }
-
-    public function setCameraViewfinderHeight($value)
-    {
-        $this->viewfinder_height = $value;
+        $this->scannerUxon = $uxon;
+        $this->scanner = null;
+        
         return $this;
     }
     
@@ -272,26 +93,15 @@ abstract class AbstractScanAction extends CustomFacadeScript
      * @see \exface\Core\Actions\CustomFacadeScript::buildScriptHelperFunctions()
      */
     public function buildScriptHelperFunctions(FacadeInterface $facade) : string
-    {
-        $output = '';
-        
-        if ($this->getUseCamera() || $this->getUseFileUpload()){
-            $output .= $this->buildJsInitQuagga($facade);
-        } 
-        
-        // Add ScannerDetector in any case, as the camera scanner
-        // will simply trigger it (the camera behaves as a keyboard
-        // scanner)
-        $output .= $this->buildJsInitScannerDetection($facade);
-        
-        return $output . $this->buildJsScanFunction($facade);
+    {        
+        return $this->getScanner()->buildJsScannerInit($facade) . $this->buildJsScanFunction($facade);
     }
     
     /**
      * 
      * @return WidgetInterface
      */
-    protected function getInputWidget() : WidgetInterface
+    public function getInputWidget() : WidgetInterface
     {
         return $this->getWidgetDefinedIn()->getInputWidget();
     }
@@ -300,7 +110,7 @@ abstract class AbstractScanAction extends CustomFacadeScript
      * 
      * @return AbstractJqueryElement
      */
-    protected function getInputElement(FacadeInterface $facade) : AbstractJqueryElement
+    public function getInputElement(FacadeInterface $facade) : AbstractJqueryElement
     {
         $element = $facade->getElement($this->getInputWidget());
         if (! ($element instanceof AbstractJqueryElement)){
@@ -342,7 +152,7 @@ abstract class AbstractScanAction extends CustomFacadeScript
 JS;
     }
 					
-    protected function buildJsScanFunctionName(FacadeInterface $facade) : string
+    public function buildJsScanFunctionName(FacadeInterface $facade) : string
     {
         return $this->getButtonElement($facade)->buildJsFunctionPrefix() . 'onScan';
     }
@@ -360,415 +170,30 @@ JS;
     protected abstract function buildJsScanFunctionBody(FacadeInterface $tempalte, $js_var_barcode, $js_var_qty, $js_var_overwrite) : string;
     
     /**
-     * Initializes the listener for scan events coming from keyboard scanners
-     * (e.g. build-in, bluetooth or USB scanners).
-     * 
-     * @return string
-     */
-    protected function buildJsInitScannerDetection(FacadeInterface $facade) : string
-    {
-        $input_element = $this->getInputElement($facade);
-        $js = '';
-
-        $initJS = "
-
-                    onScan.attachTo(document, {
-						scanButtonLongPressTime: " . $this->getScanButtonLongPressTime() . ",
-						" . ($this->getBarcodePrefixKeyCodes() ? 'prefixKeyCodes: [' . $this->getBarcodePrefixKeyCodes() . '],' : '') . "
-						" . ($this->getBarcodeSuffixKeyCodes() ? 'suffixKeyCodes: [' . $this->getBarcodeSuffixKeyCodes() . '],' : '') . "
-						" . ($this->getScanButtonKeyCode() !== null ? 'scanButtonKeyCode: ' . $this->getScanButtonKeyCode() . ',' : '') . "
-						" . ($this->getBarcodeScanDisabledIfFocusOnWidget() === true ? 'ignoreIfFocusOn: "input",' : '') . "
-						preventDefault: " . ($this->getBarcodeScanEventPreventDefault() ? 'true' : 'false') . ",
-                        stopPropagation: " . ($this->getBarcodeScanEventPreventDefault() ? 'true' : 'false') . ",
-						onScan:	{$this->buildJsScanFunctionName($facade)}
-					});
-					
-";
-
-        // Do some facade-specific stuff
-        switch (true) {
-            // Facades built on jQueryMobile
-            case ($facade->is('exface.JQueryMobileFacade.JQueryMobileFacade')):
-            case ($facade->is('exface.NativeDroid2Facade.NativeDroid2Facade')):
-                $js = <<<JS
-                    
-                $(document).on('pageshow', '#{$input_element->getJqmPageId()}', function(){
-                    {$initJS}
-				});
-				
-                $(document).on('pagehide', '#{$input_element->getJqmPageId()}', function(){
-					onScan.detachFrom(document);
-				});
-                
-JS;
-            break;
-            
-            // Facades built on SAP UI5
-            case ($facade->is('exface.UI5Facade.UI5Facade')):
-                $controller = $input_element->getController();
-                $controller->addOnShowViewScript($initJS);
-                $controller->addOnHideViewScript("onScan.detachFrom(document);");
-                break;
-            
-            // Regular jQuery facades
-            default:
-                $js = <<<JS
-                    
-                $(document).ready(function(){
-                    {$initJS}
-				});
-                
-JS;
-        }       
-        
-        return $js;
-    }
-
-    /**
-     * Initializes the camera/image scanner
-     * 
-     * @return string
-     */
-    protected function buildJsInitQuagga(FacadeInterface $facade) : string
-    {
-        $result = '';
-        $button = $facade->getElement($this->getWidgetDefinedIn());
-        
-        $readers = explode(',', $this->getBarcodeTypes());
-        for ($i = 0; $i < count($readers); $i ++) {
-            $readers[$i] = trim($readers[$i]) . '_reader';
-        }
-        $readers_init = json_encode($readers);
-        
-        $camera = $this->getSwitchCamera() ? 'user' : 'environment';
-        
-        if ($this->getUseFileUpload()) {
-            $result = <<<JS
-
-$(function() {
-	$('#{$button->getId()}').after($('<input style="visibility:hidden; display:inline; width: 0px;"type="file" id="{$button->getId()}_file" accept="image/*;capture=camera"/>'));
-	
-    var App = {
-        init: function() {
-            App.attachListeners();
-        },
-        config: {
-            reader: "ean",
-            length: 10
-        },
-        attachListeners: function() {
-            var self = this;
-
-            $("#{$button->getId()}_file").on("change", function(e) {
-                if (e.target.files && e.target.files.length) {
-                    App.decode(URL.createObjectURL(e.target.files[0]));
-                }
-            });
-
-            $(".controls button").on("click", function(e) {
-                var input = document.querySelector(".controls input[type=file]");
-                if (input.files && input.files.length) {
-                    App.decode(URL.createObjectURL(input.files[0]));
-                }
-            });
-
-            $(".controls .reader-config-group").on("change", "input, select", function(e) {
-                e.preventDefault();
-                var target = $(e.target),
-                    value = target.attr("type") === "checkbox" ? target.prop("checked") : target.val(),
-                    name = target.attr("name"),
-                    state = self._convertNameToState(name);
-
-                console.log("Value of "+ state + " changed to " + value);
-                self.setState(state, value);
-            });
-
-        },
-        _accessByPath: function(obj, path, val) {
-            var parts = path.split('.'),
-                depth = parts.length,
-                setter = (typeof val !== "undefined") ? true : false;
-
-            return parts.reduce(function(o, key, i) {
-                if (setter && (i + 1) === depth) {
-                    o[key] = val;
-                }
-                return key in o ? o[key] : {};
-            }, obj);
-        },
-        _convertNameToState: function(name) {
-            return name.replace("_", ".").split("-").reduce(function(result, value) {
-                return result + value.charAt(0).toUpperCase() + value.substring(1);
-            });
-        },
-        detachListeners: function() {
-            $(".controls input[type=file]").off("change");
-            $(".controls .reader-config-group").off("change", "input, select");
-            $(".controls button").off("click");
-
-        },
-        decode: function(src) {
-            var self = this,
-                config = $.extend({}, self.state, {src: src});
-			{$button->buildJsBusyIconShow()}
-            setTimeout(function() {
-			    {$button->buildJsBusyIconHide()}
-			}, 5000);
-            Quagga.decodeSingle(config, function(result) { $(document).scannerDetector(result.codeResult.code); {$button->buildJsBusyIconHide()}});
-        },
-        setState: function(path, value) {
-            var self = this;
-
-            if (typeof self._accessByPath(self.inputMapper, path) === "function") {
-                value = self._accessByPath(self.inputMapper, path)(value);
-            }
-
-            self._accessByPath(self.state, path, value);
-
-            console.log(JSON.stringify(self.state));
-            App.detachListeners();
-            App.init();
-        },
-        inputMapper: {
-            inputStream: {
-                size: function(value){
-                    return parseInt(value);
-                }
-            },
-            numOfWorkers: function(value) {
-                return parseInt(value);
-            },
-            decoder: {
-                readers: function(value) {
-                    return [value + "_reader"];
-                }
-            }
-        },
-        state: {
-            inputStream: {
-                size: 800
-            },
-            locator: {
-                patchSize: "medium",
-                halfSample: false
-            },
-            numOfWorkers: 8,
-            decoder: {
-                readers: {$readers_init}
-            },
-            locate: true,
-            src: null
-        }
-    };
-    
-    App.init();
-}); 
-			
-JS;
-        } elseif ($this->getUseCamera()) {
-            $dialog = <<<JS
-<div class="modal" id="{$button->getId()}_scanner">\
-	<style>\
-		#interactive.viewport {position: relative;}\
-		#interactive.viewport > canvas, #interactive.viewport > video { max-width: 100%; width: 100%;}\
-		canvas.drawing, canvas.drawingBuffer {position: absolute;left: 0;top: 0;}\
-	</style>\
-	<div class="modal-dialog modal-lg">\
-		<div class="modal-content">\
-			<div class="modal-header">\
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>\
-				<h4 class="modal-title">Scanner</h4>\
-			</div>\
-			<div class="modal-body" style="text-align:center;">\
-				<div id="interactive" class="viewport"></div>\
-			</div>\
-			<div class="modal-footer">\
-        		<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>\
-      		</div>\
-		</div><!-- /.modal-content -->\
-	</div><!-- /.modal-dialog -->\
-</div><!-- /.modal -->\	
-JS;
-            $result = <<<JS
-	
-$(function() {
-	$('body').append('{$dialog}');
-	
-	$("#{$button->getId()}").on("click", function(e) {
-       $('#{$button->getId()}_scanner').modal('show');
-		Quagga.init({
-				inputStream: {
-	                type : "LiveStream",
-	                constraints: {
-	                    width: {$this->getCameraViewfinderWidth()},
-	                    height: {$this->getCameraViewfinderHeight()},
-	                    facingMode: "{$camera}"
-	                }
-	            },
-	            locator: {
-	                patchSize: "medium",
-	                halfSample: true
-	            },
-	            numOfWorkers: 4,
-	            decoder: {
-	            	readers: [{"format":"ean_reader","config":{}}]
-	            },
-	            locate: true
-			}, 
-			function(err) {
-				if (err) {
-					console.log(err);
-					return;
-				}
-				Quagga.start();
-			}
-		);
-    });
-       		
-    $('#{$button->getId()}_scanner').on('hide.bs.modal', function(){
-    	if (Quagga){
-    		Quagga.stop();	
-    	}
-    });
-
-	Quagga.onProcessed(function(result) {
-        var drawingCtx = Quagga.canvas.ctx.overlay,
-            drawingCanvas = Quagga.canvas.dom.overlay;
-
-        if (result) {
-            if (result.boxes) {
-                drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
-                result.boxes.filter(function (box) {
-                    return box !== result.box;
-                }).forEach(function (box) {
-                    Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "green", lineWidth: 2});
-                });
-            }
-
-            if (result.box) {
-                Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#00F", lineWidth: 2});
-            }
-
-            if (result.codeResult && result.codeResult.code) {
-                Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 3});
-            }
-        }
-    });
-
-    Quagga.onDetected(function(result) {    		
-    	if (result.codeResult.code){
-    		onScan.simulate(document, result.codeResult.code);
-    		window.scrollTo(0, 0);
-    		$('#{$button->getId()}_scanner').modal('hide');
-    	}
-    });
-});		
-			
-JS;
-        }
-        
-        return $result;
-    }
-    
-    /**
      * 
      * {@inheritDoc}
      * @see \exface\Core\Actions\CustomFacadeScript::getIncludes()
      */
     public function getIncludes(FacadeInterface $facade) : array
     {
-        $includes = [];
-        if ($this->getUseKeyboardScanner()) {
-            $includes[] = $this->buildUrlIncludePath('npm-asset/onscan.js/onscan.min.js');
+        return $this->getScanner()->getIncludes($facade);
+    }
+    
+    /**
+     * 
+     * @param string $scannerType
+     * @throws UnexpectedValueException
+     * @return string
+     */
+    public static function getScannerClassFromType(string $scannerType) : string
+    {
+        switch ($scannerType) {
+            case self::SCANNER_TYPE_ONSCANJS:
+                return OnScanJsScanner::class;
+            case self::SCANNER_TYPE_QUAGGA:
+                return QuaggaJsScanner::class;
+            default:
+                throw new UnexpectedValueException('Invalid scanner type "' . $scannerType . '"!');
         }
-        
-        if ($this->getUseCamera()) {
-            $includes[] = $this->buildUrlIncludePath('bower-asset/quagga/dist/quagga.min.js');
-        }
-        
-        return $includes;
     }
-    
-    private function buildUrlIncludePath(string $pathRelativeToVendorFolder) : string
-    {
-        if (StringDataType::startsWith($pathRelativeToVendorFolder, 'https:', false) || StringDataType::startsWith($pathRelativeToVendorFolder, 'http:', false)) {
-            return $pathRelativeToVendorFolder;
-        } 
-        
-        return $this->getWorkbench()->getCMS()->buildUrlToInclude($pathRelativeToVendorFolder);
-    }
-    
-    /**
-     *
-     * @return int
-     */
-    public function getScanButtonKeyCode() : ?int
-    {
-        return $this->scanButtonKeyCode;
-    }
-    
-    /**
-     * 
-     * @param int $value
-     * @return AbstractScanAction
-     */
-    public function setScanButtonKeyCode(int $value) : AbstractScanAction
-    {
-        $this->scanButtonKeyCode = $value;
-        return $this;
-    }
-    
-    /**
-     *
-     * @return bool
-     */
-    public function getBarcodeScanEventPreventDefault() : bool
-    {
-        return $this->barcodeScanEventPreventDefault;
-    }
-    
-    /**
-     * Set to TRUE to prevent any other things to happen when a barcode scan is detected.
-     * 
-     * For example, by default the enter-key is one of the `barcode_suffix_key_codes` and,
-     * thus, every barcode scan, will shift the focus to the next focusable control. Setting
-     * `barcode_scan_event_prevent_default` to `true` will prevent this.
-     * 
-     * @uxon-property barcode_scan_event_prevent_default
-     * @uxon-type boolean
-     * @uxon-default false
-     * 
-     * @param bool $value
-     * @return AbstractScanAction
-     */
-    public function setBarcodeScanEventPreventDefault(bool $value) : AbstractScanAction
-    {
-        $this->barcodeScanEventPreventDefault = $value;
-        return $this;
-    }
-    
-    public function getBarcodeScanDisabledIfFocusOnWidget() : bool
-    {
-        return $this->barcodeScanDisaledIfFocus;
-    }
-    
-    /**
-     * Set to FALSE to perform the action even if an input widget has explicit focus.
-     * 
-     * Note: by default the scanned value will appear in the focused widget and get
-     * processed by the action simultaniously.
-     * 
-     * @uxon-property barcode_scan_disabled_if_focus_on_widget
-     * @uxon-type boolean
-     * @uxon-default true
-     * 
-     * @param bool $value
-     * @return AbstractScanAction
-     */
-    public function setBarcodeScanDisabledIfFocusOnWidget(bool $value) : AbstractScanAction
-    {
-        $this->barcodeScanDisaledIfFocus = $value;
-        return $this;
-    }
-    
 }

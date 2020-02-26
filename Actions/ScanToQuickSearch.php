@@ -4,7 +4,6 @@ namespace exface\BarcodeScanner\Actions;
 use exface\Core\Interfaces\Facades\FacadeInterface;
 use exface\Core\Interfaces\Widgets\iHaveQuickSearch;
 use exface\Core\Exceptions\Actions\ActionConfigurationError;
-use exface\Core\Interfaces\WidgetInterface;
 
 /**
  * Places the scanned code in the quick search of the input widget and performs a search.

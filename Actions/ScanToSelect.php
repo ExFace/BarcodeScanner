@@ -45,7 +45,7 @@ class ScanToSelect extends AbstractScanAction
      * {@inheritDoc}
      * @see \exface\BarcodeScanner\Actions\AbstractScanAction::getInputWidget()
      */
-    protected function getInputWidget() : WidgetInterface
+    public function getInputWidget() : WidgetInterface
     {
         $widget = parent::getInputWidget();
         if (! ($widget instanceof iShowData)) {

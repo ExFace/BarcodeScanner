@@ -247,7 +247,7 @@ class OnScanJsScanner extends AbstractJsScanner
 						" . (empty($this->getBarcodePrefixKeyCodes()) === false ? 'prefixKeyCodes: [' . implode(',', $this->getBarcodePrefixKeyCodes()) . '],' : '') . "
 						" . (empty($this->getBarcodeSuffixKeyCodes()) === false ? 'suffixKeyCodes: [' . implode(',', $this->getBarcodeSuffixKeyCodes()) . '],' : '') . "
 						" . ($this->getScanButtonKeyCode() !== null ? 'scanButtonKeyCode: ' . $this->getScanButtonKeyCode() . ',' : '') . "
-						" . ($this->getScannerDisabledIfFocusOnWidget() === true ? 'ignoreIfFocusOn: "input",' : '') . "
+						" . ($this->getScannerDisabledIfFocusOnWidget() === true ? 'ignoreIfFocusOn: "input:not([type=\'button\']):not([type=\'submit\']):not([type=\'checkbox\'])",' : '') . "
 						preventDefault: " . ($this->getScanEventPreventDefault() ? 'true' : 'false') . ",
                         stopPropagation: " . ($this->getScanEventPreventDefault() ? 'true' : 'false') . ",
                         $keyCodeMapper

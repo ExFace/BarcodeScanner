@@ -34,7 +34,7 @@ abstract class AbstractJsScanner implements JsScannerWrapperInterface
             return $pathRelativeToVendorFolder;
         }
         
-        return $facade->getWorkbench()->getCMS()->buildUrlToInclude($pathRelativeToVendorFolder);
+        return $facade->buildUrlToVendorFile($pathRelativeToVendorFolder);
     }
     
     /**

@@ -37,9 +37,9 @@ class QuaggaJsScanner extends AbstractJsScanner
      * @uxon-type boolean
      *
      * @param boolean $value
-     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
+     * @return QuaggaJsScanner
      */
-    public function setUseFileUpload($value)
+    public function setUseFileUpload($value) : QuaggaJsScanner
     {
         $this->use_file_upload = BooleanDataType::cast($value);
         return $this;
@@ -59,9 +59,9 @@ class QuaggaJsScanner extends AbstractJsScanner
      * @uxon-type boolean
      *
      * @param boolean $value
-     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
+     * @return QuaggaJsScanner
      */
-    public function setUseCamera($value)
+    public function setUseCamera($value) : QuaggaJsScanner
     {
         $this->use_camera = BooleanDataType::cast($value);
         return $this;
@@ -84,9 +84,9 @@ class QuaggaJsScanner extends AbstractJsScanner
      * @uxon-type string
      *
      * @param string $value
-     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
+     * @return QuaggaJsScanner
      */
-    public function setBarcodeTypes($value)
+    public function setBarcodeTypes($value) : QuaggaJsScanner
     {
         $this->barcode_types = $value;
         return $this;

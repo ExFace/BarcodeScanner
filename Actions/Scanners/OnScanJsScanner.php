@@ -26,6 +26,8 @@ class OnScanJsScanner extends AbstractJsScanner
     
     private $multiScanDelimiterCharacter = EXF_LIST_SEPARATOR;
     
+    private $preventEnterOnButtons = false;
+    
     /**
      *
      * @return string
@@ -251,7 +253,8 @@ class OnScanJsScanner extends AbstractJsScanner
 						onScan:	function(sScanned, iQty){
                             {$preprocessor}
                             {$this->getScanAction()->buildJsScanFunctionName($facade)}(sScanned, iQty);
-                        }
+                        },
+                        {$this->buildJsOnKeyDetect()}
 					});
 					
 ";
@@ -293,6 +296,27 @@ JS;
         }
         
         return $js;
+    }
+    
+    protected function buildJsOnKeyDetect() : string
+    {
+        $js = '';
+        if ($this->getPreventEnterOnButtons()) {
+            $js .= <<<JS
+                        
+                        var oFocused = document.activeElement;
+        				if (oEvent.which === 13 && (oFocused.matches("input[type='button']") || oFocused.matches("button")) && onScan.isScanInProgressFor(document)) {
+        					oEvent.preventDefault();
+        				}
+
+JS;
+        }
+        
+        if ($js) {
+            return "onKeyDetect: function(iKeyCode, oEvent) { $js },";
+        }
+        
+        return '';
     }
     
     /**
@@ -403,6 +427,33 @@ JS;
     public function setMultiScanDelimiterCharacter(string $value) : OnScanJsScanner
     {
         $this->multiScanDelimiterCharacter = $value;
+        return $this;
+    }
+    
+    protected function getPreventEnterOnButtons() : bool
+    {
+        return $this->preventEnterOnButtons;
+    }
+    
+    /**
+     * Set to TRUE to prevent "enter" key events, that are potential barcode characters from "pressing" focused buttons.
+     * 
+     * If a barcode is being scanned while a button is focused and the scanner sends an "enter"
+     * ley (key code 13), the button will get triggered. If the enter key code has some special
+     * meaning within the barcode, and you do not want the default button-trigger behavior,
+     * set this property to `true`. In this case enter key events will be silenced if a button
+     * is focused.
+     * 
+     * @uxon-property prevent_enter_on_buttons
+     * @uxon-type boolean
+     * @uxon-default false
+     * 
+     * @param bool $trueOrFalse
+     * @return OnScanJsScanner
+     */
+    public function setPreventEnterOnButtons(bool $trueOrFalse) : OnScanJsScanner
+    {
+        $this->preventEnterOnButtons;
         return $this;
     }
 }

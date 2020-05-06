@@ -8,10 +8,8 @@ use exface\Core\Interfaces\iCanBeConvertedToUxon;
 
 class OnScanJsScanner extends AbstractJsScanner
 {
-    // TODO get the value from the app config as soon as configs are possible
     private $barcode_prefixes = [];
     
-    // TODO get the value from the app config as soon as configs are possible
     private $barcode_suffixes = [9,13];
     
     private $barcodeScanEventPreventDefault = false;
@@ -20,7 +18,6 @@ class OnScanJsScanner extends AbstractJsScanner
     
     private $barcodeScanDisaledIfFocus = true;
     
-    // TODO get the value from the app config as soon as configs are possible
     private $detect_longpress_after_sequential_scans = 5;
     
     private $customKeyCodeMap = null;
@@ -28,6 +25,8 @@ class OnScanJsScanner extends AbstractJsScanner
     private $multiScanDelimiterKeyCode = null;
     
     private $multiScanDelimiterCharacter = EXF_LIST_SEPARATOR;
+    
+    private $preventEnterOnButtons = false;
     
     /**
      *
@@ -57,7 +56,7 @@ class OnScanJsScanner extends AbstractJsScanner
      * @uxon-type string
      *
      * @param string $value
-     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
+     * @return OnScanJsScanner
      */
     public function setBarcodePrefixKeyCodes(string $value) : OnScanJsScanner
     {
@@ -95,7 +94,7 @@ class OnScanJsScanner extends AbstractJsScanner
      * @uxon-template 9,13
      *
      * @param string $value
-     * @return \exface\BarcodeScanner\Actions\AbstractScanAction
+     * @return OnScanJsScanner
      */
     public function setBarcodeSuffixKeyCodes(string $value) : OnScanJsScanner
     {
@@ -124,9 +123,9 @@ class OnScanJsScanner extends AbstractJsScanner
      * @uxon-template 500
      *
      * @param int $value
-     * @return AbstractScanAction
+     * @return OnScanJsScanner
      */
-    public function setScanButtonLongPressTime(int $value)
+    public function setScanButtonLongPressTime(int $value) : OnScanJsScanner
     {
         $this->detect_longpress_after_sequential_scans = $value;
         return $this;
@@ -148,9 +147,9 @@ class OnScanJsScanner extends AbstractJsScanner
      * @uxon-type integer 
      * 
      * @param int $value
-     * @return AbstractScanAction
+     * @return OnScanJsScanner
      */
-    public function setScanButtonKeyCode(int $value) : AbstractScanAction
+    public function setScanButtonKeyCode(int $value) : OnScanJsScanner
     {
         $this->scanButtonKeyCode = $value;
         return $this;
@@ -177,9 +176,9 @@ class OnScanJsScanner extends AbstractJsScanner
      * @uxon-default false
      *
      * @param bool $value
-     * @return AbstractScanAction
+     * @return OnScanJsScanner
      */
-    public function setScanEventPreventDefault(bool $value) : AbstractScanAction
+    public function setScanEventPreventDefault(bool $value) : OnScanJsScanner
     {
         $this->barcodeScanEventPreventDefault = $value;
         return $this;
@@ -201,9 +200,9 @@ class OnScanJsScanner extends AbstractJsScanner
      * @uxon-default true
      *
      * @param bool $value
-     * @return AbstractScanAction
+     * @return OnScanJsScanner
      */
-    public function setScannerDisabledIfFocusOnWidget(bool $value) : AbstractScanAction
+    public function setScannerDisabledIfFocusOnWidget(bool $value) : OnScanJsScanner
     {
         $this->barcodeScanDisaledIfFocus = $value;
         return $this;
@@ -254,7 +253,8 @@ class OnScanJsScanner extends AbstractJsScanner
 						onScan:	function(sScanned, iQty){
                             {$preprocessor}
                             {$this->getScanAction()->buildJsScanFunctionName($facade)}(sScanned, iQty);
-                        }
+                        },
+                        {$this->buildJsOnKeyDetect()}
 					});
 					
 ";
@@ -296,6 +296,27 @@ JS;
         }
         
         return $js;
+    }
+    
+    protected function buildJsOnKeyDetect() : string
+    {
+        $js = '';
+        if ($this->getPreventEnterOnButtons()) {
+            $js .= <<<JS
+                        
+                        var oFocused = document.activeElement;
+        				if (oEvent.which === 13 && (oFocused.matches("input[type='button']") || oFocused.matches("button")) && onScan.isScanInProgressFor(document)) {
+        					oEvent.preventDefault();
+        				}
+
+JS;
+        }
+        
+        if ($js) {
+            return "onKeyDetect: function(iKeyCode, oEvent) { $js },";
+        }
+        
+        return '';
     }
     
     /**
@@ -406,6 +427,33 @@ JS;
     public function setMultiScanDelimiterCharacter(string $value) : OnScanJsScanner
     {
         $this->multiScanDelimiterCharacter = $value;
+        return $this;
+    }
+    
+    protected function getPreventEnterOnButtons() : bool
+    {
+        return $this->preventEnterOnButtons;
+    }
+    
+    /**
+     * Set to TRUE to prevent "enter" key events, that are potential barcode characters from "pressing" focused buttons.
+     * 
+     * If a barcode is being scanned while a button is focused and the scanner sends an "enter"
+     * ley (key code 13), the button will get triggered. If the enter key code has some special
+     * meaning within the barcode, and you do not want the default button-trigger behavior,
+     * set this property to `true`. In this case enter key events will be silenced if a button
+     * is focused.
+     * 
+     * @uxon-property prevent_enter_on_buttons
+     * @uxon-type boolean
+     * @uxon-default false
+     * 
+     * @param bool $trueOrFalse
+     * @return OnScanJsScanner
+     */
+    public function setPreventEnterOnButtons(bool $trueOrFalse) : OnScanJsScanner
+    {
+        $this->preventEnterOnButtons;
         return $this;
     }
 }

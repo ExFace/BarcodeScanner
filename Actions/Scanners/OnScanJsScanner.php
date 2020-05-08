@@ -249,6 +249,7 @@ class OnScanJsScanner extends AbstractJsScanner
 						" . ($this->getScannerDisabledIfFocusOnWidget() === true ? 'ignoreIfFocusOn: "input:not([type=\'button\']):not([type=\'submit\']):not([type=\'checkbox\'])",' : '') . "
 						preventDefault: " . ($this->getScanEventPreventDefault() ? 'true' : 'false') . ",
                         stopPropagation: " . ($this->getScanEventPreventDefault() ? 'true' : 'false') . ",
+                        captureEvents: true,
                         $keyCodeMapper
 						onScan:	function(sScanned, iQty){
                             {$preprocessor}
@@ -307,6 +308,7 @@ JS;
                         var oFocused = document.activeElement;
         				if (oEvent.which === 13 && (oFocused.matches("input[type='button']") || oFocused.matches("button")) && onScan.isScanInProgressFor(document)) {
         					oEvent.preventDefault();
+                            oEvent.stopImmediatePropagation();
         				}
 
 JS;
@@ -453,7 +455,7 @@ JS;
      */
     public function setPreventEnterOnButtons(bool $trueOrFalse) : OnScanJsScanner
     {
-        $this->preventEnterOnButtons;
+        $this->preventEnterOnButtons = $trueOrFalse;
         return $this;
     }
 }

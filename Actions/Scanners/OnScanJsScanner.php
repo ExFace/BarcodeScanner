@@ -326,8 +326,9 @@ JS;
      */
     public function getIncludes(FacadeInterface $facade) : array
     {
+        $config = $this->getScanAction()->getWorkbench()->getApp('exface.BarcodeScanner')->getConfig();
         return [
-            $this->buildUrlIncludePath('npm-asset/onscan.js/onscan.min.js', $facade)
+            $this->buildUrlIncludePath($config->getOption('LIBS.ONSCAN.JS'), $facade)
         ];
     }
     

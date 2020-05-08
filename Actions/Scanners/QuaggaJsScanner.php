@@ -381,8 +381,9 @@ JS;
      */
     public function getIncludes(FacadeInterface $facade) : array
     {
+        $config = $this->getScanAction()->getWorkbench()->getApp('exface.BarcodeScanner')->getConfig();
         return [
-            $this->buildUrlIncludePath('bower-asset/quagga/dist/quagga.min.js', $facade)
+            $this->buildUrlIncludePath($config->getOption('LIBS.QUAGGA.JS'), $facade)
         ];
     }
     

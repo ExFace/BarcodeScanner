@@ -240,7 +240,10 @@ class OnScanJsScanner extends AbstractJsScanner
         }
         
         $initJS = "
-            
+                    if (onScan.isAttachedTo(document)) {
+                        onScan.detachFrom(document);
+                    }
+                    
                     onScan.attachTo(document, {
 						scanButtonLongPressTime: " . $this->getScanButtonLongPressTime() . ",
 						" . (empty($this->getBarcodePrefixKeyCodes()) === false ? 'prefixKeyCodes: [' . implode(',', $this->getBarcodePrefixKeyCodes()) . '],' : '') . "

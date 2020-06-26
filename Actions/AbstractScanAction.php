@@ -12,11 +12,13 @@ use exface\BarcodeScanner\Actions\Scanners\OnScanJsScanner;
 use exface\BarcodeScanner\Actions\Scanners\QuaggaJsScanner;
 use exface\Core\CommonLogic\UxonObject;
 use exface\Core\Exceptions\UnexpectedValueException;
+use exface\BarcodeScanner\Actions\Scanners\ZXingScanner;
 
 abstract class AbstractScanAction extends CustomFacadeScript
 {
     const SCANNER_TYPE_ONSCANJS = 'hardware';
-    const SCANNER_TYPE_QUAGGA = 'camera';
+    const SCANNER_TYPE_QUAGGA = 'quagga';
+    const SCANNER_TYPE_CAMERA = 'camera';
     
     private $scanner = null;
     
@@ -45,7 +47,7 @@ abstract class AbstractScanAction extends CustomFacadeScript
         } else {
             if ($this->scannerUxon instanceof UxonObject) {
                 $value = mb_strtolower($this->scannerUxon->getProperty('type'));
-                if ($value !== self::SCANNER_TYPE_ONSCANJS && $value !== self::SCANNER_TYPE_QUAGGA) {
+                if ($value !== self::SCANNER_TYPE_ONSCANJS && $value !== self::SCANNER_TYPE_CAMERA && $value !== self::SCANNER_TYPE_QUAGGA) {
                     throw new ActionConfigurationError($this, 'Invalid scanner type "' . $value . '" in action "' . $this->getAliasWithNamespace() . '"!');
                 }
                 return $value;
@@ -192,8 +194,17 @@ JS;
                 return OnScanJsScanner::class;
             case self::SCANNER_TYPE_QUAGGA:
                 return QuaggaJsScanner::class;
+            case self::SCANNER_TYPE_CAMERA:
+                return ZXingScanner::class;
             default:
                 throw new UnexpectedValueException('Invalid scanner type "' . $scannerType . '"!');
         }
+    }
+    
+    public function buildScript($widget_id)
+    {
+        $script = parent::buildScript($widget_id);
+        $script .= $this->getScanner()->buildJsScan();
+        return $script;
     }
 }

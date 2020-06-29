@@ -38,15 +38,17 @@ class ZXingScanner extends AbstractJsScanner
     public function getIncludes(FacadeInterface $facade): array
     {
         $path = "exface/Core/Facades/AbstractAjaxFacade/js/camera";
+        $config = $this->getScanAction()->getWorkbench()->getApp('exface.BarcodeScanner')->getConfig();
         $includes = [];
-        $includes[] = "<script type='text/javascript' src='{$facade->buildUrlToVendorFile($path . '/camera.js')}'></script>";
-        $includes[] = "<script type='text/javascript' src='https://unpkg.com/@zxing/library@latest'></script>";
+        $includes[] = $facade->buildUrlToVendorFile($path . '/camera.js');
+        $includes[] = $this->buildUrlIncludePath($config->getOption('LIBS.ZXING.JS'), $facade);
         $includes[] = "<link rel='stylesheet' type='text/css' href='{$facade->buildUrlToVendorFile($path . '/style.css')}'></link>";
         return $includes;
     }
 
     public function buildJsScannerInit(FacadeInterface $facade): string
     {
+        $input_element = $this->getScanAction()->getInputElement($facade);
         $checkMark = $this->getCameraId() . '_image'; 
         $wrapper = <<<JS
         <div id="{$this->getCameraId()}" style="display: none;">
@@ -58,16 +60,13 @@ class ZXingScanner extends AbstractJsScanner
 JS;
         $wrapper = preg_replace( "/(\r|\n)/", "", $wrapper);
         
-        return <<<JS
+        $initJS = <<<JS
 
-        $(function() {
-            $('body').append('{$wrapper}');
-        });
+        $('body').append('{$wrapper}');
 
         var codeReader = new ZXing.BrowserMultiFormatReader();
 
         camera.init('{$this->getCameraId()}', {
-            showTakePhoto: false,
             onStreamStart: function(deviceId) {
                 codeReader.decodeOnceFromVideoDevice(deviceId).then((result) => {
                     console.log('ScanResult', result.text);
@@ -85,11 +84,44 @@ JS;
             onStreamEnd: function() {
                 codeReader.stopStreams();
             },
-            hints: ['Halten sie den Code in die Mitte der Kamera!', 'Wechseln sie die Kamera', 'Schalten sie das Licht der Kamera ein']
+            hints: {$facade->getWorkbench()->getApp('exface.BarcodeScanner')->getTranslator()->translate('ZXING.SCANNER.HINTS')}
         });
 
         
 JS;
+    
+    // Do some facade-specific stuff
+    switch (true) {
+        // Facades built on jQueryMobile
+        case ($facade->is('exface.JQueryMobileFacade.JQueryMobileFacade')):
+        case ($facade->is('exface.NativeDroid2Facade.NativeDroid2Facade')):
+            $js = <<<JS
+            
+                $(document).on('pageshow', '#{$input_element->getJqmPageId()}', function(){
+                    {$initJS}
+				});
+				
+JS;
+                    break;
+                    
+                    // Facades built on SAP UI5
+        case ($facade->is('exface.UI5Facade.UI5Facade')):
+            $controller = $input_element->getController();
+            $controller->addOnShowViewScript($initJS);
+            break;
+            
+            // Regular jQuery facades
+        default:
+            $js = <<<JS
+            
+                $(document).ready(function(){
+                    {$initJS}
+				});
+				
+JS;
+    }
+    
+    return $js;
     }
     
     /**

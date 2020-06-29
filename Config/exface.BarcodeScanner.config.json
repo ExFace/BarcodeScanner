@@ -1,4 +1,5 @@
 {
 	"LIBS.ONSCAN.JS": "npm-asset/onscan.js/onscan.min.js",
-	"LIBS.QUAGGA.JS": "bower-asset/quagga/dist/quagga.min.js"
+	"LIBS.QUAGGA.JS": "bower-asset/quagga/dist/quagga.min.js",
+	"LIBS.ZXING.JS": "npm-asset/zxing--library/umd/index.min.js"
 }

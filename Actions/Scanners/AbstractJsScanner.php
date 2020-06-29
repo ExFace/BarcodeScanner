@@ -66,4 +66,14 @@ abstract class AbstractJsScanner implements JsScannerWrapperInterface
     {
         return JsScannerUxonSchema::class;
     }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\BarcodeScanner\Interfaces\JsScannerWrapperInterface::buildJsScan()
+     */
+    public function buildJsScan(): string
+    {
+        return '';
+    }
 }

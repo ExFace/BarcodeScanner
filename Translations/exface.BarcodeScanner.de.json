@@ -1,3 +1,4 @@
 {
-	"ACTION.DEFAULT_NAME": "Scannen"
+	"ACTION.DEFAULT_NAME": "Scannen",
+	"ZXING.SCANNER.HINTS": "['Halten Sie den Code in die Mitte der Kamera!', 'Versuchen Sie die Kamera zu wechseln!', 'Versuchen Sie das Licht der Kamera zu aktivieren!']"
 }

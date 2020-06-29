@@ -41,7 +41,7 @@ class ZXingScanner extends AbstractJsScanner
         $includes = [];
         $includes[] = "<script type='text/javascript' src='{$facade->buildUrlToVendorFile($path . '/camera.js')}'></script>";
         $includes[] = "<script type='text/javascript' src='https://unpkg.com/@zxing/library@latest'></script>";
-        $includes[] = "<link rel='stylesheet' type='text/css' href='{$facade->buildUrlToVendorFile($path . '/style.css')}'></script>";
+        $includes[] = "<link rel='stylesheet' type='text/css' href='{$facade->buildUrlToVendorFile($path . '/style.css')}'></link>";
         return $includes;
     }
 
@@ -50,7 +50,7 @@ class ZXingScanner extends AbstractJsScanner
         $checkMark = $this->getCameraId() . '_image'; 
         $wrapper = <<<JS
         <div id="{$this->getCameraId()}" style="display: none;">
-            <div id = "{$checkMark}" style="display: none; z-index: 15; position: fixed; top: 30%; left: 30%; height: 100vh, width: 100vw">
+            <div id = "{$checkMark}" style="display: none; z-index: 2010; position: fixed; top: 30%; left: 30%; height: 100vh, width: 100vw">
                 <i class="fa fa-check-circle-o" aria-hidden="true" style="color: limegreen; font-size: 200px;"></i>
             </div>
         </div>
@@ -85,6 +85,7 @@ JS;
             onStreamEnd: function() {
                 codeReader.stopStreams();
             },
+            hints: ['Halten sie den Code in die Mitte der Kamera!', 'Wechseln sie die Kamera', 'Schalten sie das Licht der Kamera ein']
         });
 
         

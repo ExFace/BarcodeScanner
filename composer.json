@@ -17,7 +17,7 @@
 		"bower-asset/quagga" : ">=0.11",
 		"bower-asset/jquery-numpad" : "^1.4",
 		"npm-asset/onscan.js" : "^1.5",
-		"npm-asset/zxing-js-es6" : "^0.17.0"
+        "npm-asset/zxing--library": "^0.17.0"
 	},
 	"extra" : {
 		"app" : {

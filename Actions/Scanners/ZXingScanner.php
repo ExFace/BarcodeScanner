@@ -84,6 +84,7 @@ JS;
             onStreamEnd: function() {
                 codeReader.stopStreams();
             },
+            showTakePhoto: false,
             hints: {$facade->getWorkbench()->getApp('exface.BarcodeScanner')->getTranslator()->translate('ZXING.SCANNER.HINTS')}
         });
 

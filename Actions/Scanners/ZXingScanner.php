@@ -52,8 +52,8 @@ class ZXingScanner extends AbstractJsScanner
         $checkMark = $this->getCameraId() . '_image'; 
         $wrapper = <<<JS
         <div id="{$this->getCameraId()}" style="display: none;">
-            <div id = "{$checkMark}" style="display: none; z-index: 2010; position: fixed; top: 30%; left: 30%; height: 100vh, width: 100vw">
-                <i class="fa fa-check-circle-o" aria-hidden="true" style="color: limegreen; font-size: 200px;"></i>
+            <div id = "{$checkMark}" style="display: none; z-index: 2003; position: fixed; height: 100vh; width: 100vw">
+                <i class="fa fa-check-circle-o" aria-hidden="true" style="position: fixed; top: calc(50% - 125px); left: calc(50% - 75px); color: limegreen; font-size: 200px;"></i>
             </div>
         </div>
 
@@ -67,8 +67,8 @@ JS;
         var codeReader = new ZXing.BrowserMultiFormatReader();
 
         camera.init('{$this->getCameraId()}', {
-            onStreamStart: function(deviceId) {
-                codeReader.decodeOnceFromVideoDevice(deviceId).then((result) => {
+            onStreamStart: function(deviceId, videoId) {
+                codeReader.decodeOnceFromVideoDevice(deviceId, videoId).then((result) => {
                     console.log('ScanResult', result.text);
                     {$this->getScanAction()->buildJsScanFunctionName($facade)}(result.text, 1);
                     var image = document.getElementById('{$checkMark}');

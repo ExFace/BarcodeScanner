@@ -77,7 +77,7 @@ JS;
                         image.style.display = "none";
                         camera.close();
                     }, 2000);
-                }).catch((err) => {
+                }).catch(function(err){
                 	console.error(err)
                 })
             },

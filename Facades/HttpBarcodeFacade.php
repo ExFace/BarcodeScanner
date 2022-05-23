@@ -50,6 +50,9 @@ class HttpBarcodeFacade extends AbstractHttpFacade
         $pathParts = explode('/', $path);
         $barcodeType = urldecode($pathParts[0]);
         $value = urldecode($pathParts[1]);
+        if ($value == '') {
+            $value = null;
+        }
         $headers = [
             'Expires' => 0,
             'Cache-Control', 'must-revalidate, post-check=0, pre-check=0',

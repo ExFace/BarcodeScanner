@@ -29,6 +29,16 @@ require (__DIR__.'\..\CommonLogic\barcode.php');
  */
 class HttpBarcodeFacade extends AbstractHttpFacade
 {    
+    const FORMAT_PNG = 'png';
+    
+    const FORMAT_GIF = 'gif';
+    
+    const FORMAT_JPEG = 'jpeg';
+    
+    const FORMAT_JPG = 'jpg';
+    
+    const FORMAT_SVG = 'svg';
+    
     
     /**
      *
@@ -56,8 +66,8 @@ class HttpBarcodeFacade extends AbstractHttpFacade
         if ($value == '') {
             $value = null;
         }
-        $datatype = DataTypeFactory::createFromPrototype($this->getWorkbench(), BarcodeDataType::class);
-        if (! $datatype->isValidType($barcodeType) || ! $value) {
+        
+        if (! BarcodeDataType::isValidStaticValue($barcodeType) || ! $value) {
             $this->getWorkbench()->getLogger()->logException(new FacadeRuntimeError("Cannot create barcode with type '{$barcodeType}' and value '{$value}'"));
             return new Response(404);
         }
@@ -75,21 +85,21 @@ class HttpBarcodeFacade extends AbstractHttpFacade
         if ($format = $params['f']) {
             $format = strtolower($format);
             switch (true) {
-                case $format == BarcodeDataType::FORMAT_GIF:
-                    $format = BarcodeDataType::FORMAT_GIF;
+                case $format == self::FORMAT_GIF:
+                    $format = self::FORMAT_GIF;
                     $headers['Content-Type'] = 'image/' . $format;
                     break;
-                case $format == BarcodeDataType::FORMAT_SVG:
-                    $format = BarcodeDataType::FORMAT_SVG;
+                case $format == self::FORMAT_SVG:
+                    $format = self::FORMAT_SVG;
                     $headers['Content-Type'] = 'image/' . $format . '+xml';
                     break;
-                case $format == BarcodeDataType::FORMAT_PNG:
-                    $format = BarcodeDataType::FORMAT_PNG;
+                case $format == self::FORMAT_PNG:
+                    $format = self::FORMAT_PNG;
                     $headers['Content-Type'] = 'image/' . $format;
                     break;
-                case $format == BarcodeDataType::FORMAT_JPG:
-                case $format == BarcodeDataType::FORMAT_JPEG:
-                    $format = BarcodeDataType::FORMAT_JPEG;
+                case $format == self::FORMAT_JPG:
+                case $format == self::FORMAT_JPEG:
+                    $format = self::FORMAT_JPEG;
                     $headers['Content-Type'] = 'image/' . $format;
                     break;
                 default:
@@ -98,7 +108,7 @@ class HttpBarcodeFacade extends AbstractHttpFacade
             unset ($params['f']);
             }              
         } else {
-            $format = BarcodeDataType::FORMAT_JPEG;
+            $format = self::FORMAT_JPEG;
             $headers['Content-Type'] = 'image/' . $format;
         }
         $generator = new \barcode_generator();

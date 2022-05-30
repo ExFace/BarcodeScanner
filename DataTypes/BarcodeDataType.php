@@ -3,52 +3,51 @@
 namespace exface\BarcodeScanner\DataTypes;
 
 use exface\Core\CommonLogic\DataTypes\AbstractDataType;
+use exface\Core\CommonLogic\DataTypes\EnumStaticDataTypeTrait;
+use exface\Core\Interfaces\DataTypes\EnumDataTypeInterface;
 
-class BarcodeDataType extends AbstractDataType
+class BarcodeDataType extends AbstractDataType implements EnumDataTypeInterface
 {
-    private const types = [
-        'UPC-A' => 'upc-a',
-        'UPC-E' => 'upc-e',
-        'EAN-8' => 'ean-8',
-        'EAN-13' => 'ean-13',
-        'EAN-13-PAD' => 'ean-13-pad',
-        'EAN-13-NOPAD' => 'ean-13-nopad',
-        'EAN-128' => 'ean-128',
-        'CODE-39' => 'code-39',
-        'CODE-39-ASCII' => 'code-39-ascii',
-        'CODE-93' => 'code-93',
-        'CODE-93-ASCII' => 'code-93-ascii',
-        'CODE-128' => 'code-128',
-        'CODABAR' => 'codabar',
-        'ITF' => 'itf',
-        'QR' => 'qr',
-        'QR-L' => 'qr-l',
-        'QR-M' => 'qr-m',
-        'QR-Q' => 'qr-q',
-        'QR-H' => 'qr-h',
-        'DMTX' => 'dmtx',
-        'DMTX-S' => 'dmtx-s',
-        'DMTX-R' => 'dmtx-r',
-        'GS1-DMTX' => 'gs1-dmtx',
-        'GS1-DMTX-S' => 'gs1-dmtx-s',
-        'GS1-DMTX-r' => 'gs1-dmtx-r'        
-    ];
+    use EnumStaticDataTypeTrait;
     
-    public const FORMAT_PNG = 'png';
-    
-    public const FORMAT_GIF = 'gif';
-    
-    public const FORMAT_JPEG = 'jpeg';
-    
-    public const FORMAT_JPG = 'jpg';
-    
-    public const FORMAT_SVG = 'svg';
-    
-    public function isValidType(string $type) : bool
+    const UPC_A = 'upc-a';
+    const UPC_E = 'upc-e';
+    const EAN_8 = 'ean-8';
+    const EAN_13 = 'ean-13';
+    const EAN_13_PAD = 'ean-13-pad';
+    const EAN_13_NOPAD = 'ean-13-nopad';
+    const EAN_128 = 'ean-128';
+    const CODE_39 = 'code-39';
+    const CODE_39_ASCII = 'code-39-ascii';
+    const CODE_93 = 'code-93';
+    const CODE_93_ASCII = 'code-93-ascii';
+    const CODE_128 = 'code-128';
+    const CODABAR = 'codabar';
+    const ITF = 'itf';
+    const QR = 'qr';
+    const QR_L = 'qr-l';
+    const QR_M = 'qr-m';
+    const QR_Q = 'qr-q';
+    const QR_H = 'qr-h';
+    const DMTX = 'dmtx';
+    const DMTX_S = 'dmtx-s';
+    const DMTX_R = 'dmtx-r';
+    const GS1_DMTX = 'gs1-dmtx';
+    const GS1_DMTX_S = 'gs1-dmtx-s';
+    const GS1_DMTX_r = 'gs1-dmtx-r';
+
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\Core\Interfaces\DataTypes\EnumDataTypeInterface::getLabels()
+     */
+    public function getLabels()
     {
-        if ($this::types[strtoupper($type)] === null) {
-            return false;
+        if (empty($this->labels)) {            
+            foreach (static::getValuesStatic() as $const => $val) {
+                $this->labels[$val] = $val;
+            }
         }
-        return true;
+        return $this->labels;
     }
 }

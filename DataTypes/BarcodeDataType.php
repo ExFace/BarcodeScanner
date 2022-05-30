@@ -35,6 +35,8 @@ class BarcodeDataType extends AbstractDataType implements EnumDataTypeInterface
     const GS1_DMTX = 'gs1-dmtx';
     const GS1_DMTX_S = 'gs1-dmtx-s';
     const GS1_DMTX_r = 'gs1-dmtx-r';
+    
+    private $labels = [];
 
     /**
      *

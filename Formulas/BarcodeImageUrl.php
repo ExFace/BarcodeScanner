@@ -5,6 +5,10 @@ use exface\Core\Exceptions\FormulaError;
 use exface\BarcodeScanner\Facades\HttpBarcodeFacade;
 use exface\Core\CommonLogic\Selectors\FacadeSelector;
 use exface\Core\Formulas\WorkbenchURL;
+use exface\Core\CommonLogic\Model\Formula;
+use exface\Core\DataTypes\ImageUrlDataType;
+use exface\Core\Factories\DataTypeFactory;
+use exface\Core\Factories\FacadeFactory;
 
 /**
   * Produces an URL to load an image showing a barcode of the given type with the givne value
@@ -15,7 +19,7 @@ use exface\Core\Formulas\WorkbenchURL;
  * @author Ralf Mulansky
  *      
  */
-class BarcodeImageUrl extends WorkbenchURL
+class BarcodeImageUrl extends Formula
 {
     /**
      * 
@@ -30,9 +34,19 @@ class BarcodeImageUrl extends WorkbenchURL
         if (! $value) {
             throw new FormulaError('No value to display as barcode!');
         }*/
-        $facade = new HttpBarcodeFacade(new FacadeSelector($this->getWorkbench(), 'exface.barcodescanner.HttpBarcodeFacade'));
+        $facade = FacadeFactory::createFromString(HttpBarcodeFacade::class, $this->getWorkbench());
         $url = $this->getWorkbench()->getUrl() . $facade->getUrlRouteDefault() . '/' . $type . '/' . $value;
         return $url;
+    }
+    
+    /**
+     *
+     * {@inheritDoc}
+     * @see \exface\Core\CommonLogic\Model\Formula::getDataType()
+     */
+    public function getDataType()
+    {
+        return DataTypeFactory::createFromPrototype($this->getWorkbench(), ImageUrlDataType::class);
     }
     
 }

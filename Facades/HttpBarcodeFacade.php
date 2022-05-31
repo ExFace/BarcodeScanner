@@ -7,12 +7,9 @@ use exface\Core\Facades\AbstractHttpFacade\AbstractHttpFacade;
 use exface\Core\DataTypes\StringDataType;
 use Intervention\Image\ImageManager;
 use GuzzleHttp\Psr7\Response;
-use function GuzzleHttp\Psr7\stream_for;
 use exface\BarcodeScanner\DataTypes\BarcodeDataType;
-use exface\Core\Factories\DataTypeFactory;
 use exface\Core\Exceptions\Facades\FacadeRuntimeError;
 
-require (__DIR__.'\..\CommonLogic\barcode.php');
 
 /**
  * Facade to create barcode images from a given value and type.
@@ -39,6 +36,11 @@ class HttpBarcodeFacade extends AbstractHttpFacade
     
     const FORMAT_SVG = 'svg';
     
+    
+    protected function init()
+    {
+        require $this->getWorkbench()->getInstallationPath() . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR .'exface'. DIRECTORY_SEPARATOR . 'barcodeScanner'. DIRECTORY_SEPARATOR . 'CommonLogic'. DIRECTORY_SEPARATOR . 'barcode.php';
+    }
     
     /**
      *

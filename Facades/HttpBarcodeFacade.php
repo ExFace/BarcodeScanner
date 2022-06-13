@@ -9,6 +9,7 @@ use Intervention\Image\ImageManager;
 use GuzzleHttp\Psr7\Response;
 use exface\BarcodeScanner\DataTypes\BarcodeDataType;
 use exface\Core\Exceptions\Facades\FacadeRuntimeError;
+use exface\Core\Interfaces\Selectors\FacadeSelectorInterface;
 
 
 /**
@@ -36,10 +37,19 @@ class HttpBarcodeFacade extends AbstractHttpFacade
     
     const FORMAT_SVG = 'svg';
     
-    
-    protected function init()
+    /**
+     * 
+     * @param FacadeSelectorInterface $selector
+     */
+    public function __construct(FacadeSelectorInterface $selector)
     {
-        require_once $this->getWorkbench()->getInstallationPath() . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR .'exface'. DIRECTORY_SEPARATOR . 'barcodeScanner'. DIRECTORY_SEPARATOR . 'CommonLogic'. DIRECTORY_SEPARATOR . 'barcode.php';
+        parent::__construct($selector);
+        require_once $this->getWorkbench()->getInstallationPath()
+            . DIRECTORY_SEPARATOR . 'vendor'
+            . DIRECTORY_SEPARATOR . 'exface'
+            . DIRECTORY_SEPARATOR . 'barcodeScanner'
+            . DIRECTORY_SEPARATOR . 'CommonLogic'
+            . DIRECTORY_SEPARATOR . 'barcode.php';
     }
     
     /**
@@ -53,12 +63,12 @@ class HttpBarcodeFacade extends AbstractHttpFacade
     }
     
     /**
-     * 
+     *
      * {@inheritDoc}
-     * @see \Psr\Http\Server\RequestHandlerInterface::handle()
+     * @see \exface\Core\Facades\AbstractHttpFacade\AbstractHttpFacade::createResponse()
      */
-    public function handle(ServerRequestInterface $request): ResponseInterface
-    {
+    protected function createResponse(ServerRequestInterface $request) : ResponseInterface
+    {   
         $uri = $request->getUri();
         $path = ltrim(StringDataType::substringAfter($uri->getPath(), $this->getUrlRouteDefault()), "/");
         

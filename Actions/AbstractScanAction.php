@@ -201,9 +201,9 @@ JS;
         }
     }
     
-    public function buildScript($widget_id)
+    public function buildScript(FacadeInterface $facade, WidgetInterface $widget)
     {
-        $script = parent::buildScript($widget_id);
+        $script = parent::buildScript($facade, $widget);
         $script .= $this->getScanner()->buildJsScan();
         return $script;
     }

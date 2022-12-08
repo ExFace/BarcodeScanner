@@ -1,41 +1,40 @@
 {
-	"name" : "exface/barcodescanner",
-	"description" : "Integratoin of BarcodeScanners in most AJAX facades for ExFace",
-	"type" : "library",
-	"license" : "GPL-3.0+",
-	"authors" : [{
-			"name" : "Andrej Kabachnik",
-			"email" : "kabachnik@gmail.com",
-			"role" : "Creator"
-		}
-	],
-	"support" : {
-		"issues" : "https://github.com/exface/BarcodeScanner/issues",
-		"source" : "https://github.com/exface/BarcodeScanner"
-	},
-	"require" : {
-		"exface/core" : "^1.0",
-		"bower-asset/quagga" : ">=0.11",
-		"bower-asset/jquery-numpad" : "^1.4",
-		"npm-asset/onscan.js" : "^1.5",
-		"npm-asset/zxing--library" : "~0.17"
-	},
-	"extra" : {
-		"app" : {
-			"app_uid" : "0x11e7526222b7f96e8b700205857feb80",
-			"app_alias" : "exface.BarcodeScanner",
-			"model_md5" : "83e0525c0d6845e352a3ce9e14d65f7b",
-			"model_timestamp" : "2017-08-02 09:16:27"
-		}
-	},
-	"autoload" : {
-		"psr-4" : {
-			"exface\\BarcodeScanner\\" : ""
-		},
-		"exclude-from-classmap" : [
-			"/Config/",
-			"/Translations/",
-			"/Model/"
-		]
-	}
+    "name": "exface/barcodescanner",
+    "description": "Integratoin of BarcodeScanners in most AJAX facades for ExFace",
+    "type": "library",
+    "license": "GPL-3.0+",
+    "authors": [
+        {
+            "name": "Andrej Kabachnik",
+            "email": "kabachnik@gmail.com",
+            "role": "Creator"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/exface/BarcodeScanner/issues",
+        "source": "https://github.com/exface/BarcodeScanner"
+    },
+    "require": {
+        "exface/core": "^1.0",
+        "bower-asset/quagga": ">=0.11",
+        "bower-asset/jquery-numpad": "^1.4",
+        "npm-asset/onscan.js": "^1.5",
+        "npm-asset/zxing--library": "~0.17"
+    },
+    "extra": {
+        "app": {
+            "app_uid": "0x11e7526222b7f96e8b700205857feb80",
+            "app_alias": "exface.BarcodeScanner"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "exface\\BarcodeScanner\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Config/",
+            "/Translations/",
+            "/Model/"
+        ]
+    }
 }

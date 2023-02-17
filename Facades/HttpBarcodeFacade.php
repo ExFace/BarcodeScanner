@@ -79,7 +79,7 @@ class HttpBarcodeFacade extends AbstractHttpFacade
             $value = null;
         }
         
-        if (! BarcodeDataType::isValidStaticValue($barcodeType) || ! $value) {
+        if (! BarcodeDataType::isValidStaticValue($barcodeType)) {
             $this->getWorkbench()->getLogger()->logException(new FacadeRuntimeError("Cannot create barcode with type '{$barcodeType}' and value '{$value}'"));
             return new Response(404);
         }

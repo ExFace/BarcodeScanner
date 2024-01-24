@@ -81,14 +81,14 @@ class HttpBarcodeFacade extends AbstractHttpFacade
         
         if (! BarcodeDataType::isValidStaticValue($barcodeType)) {
             $this->getWorkbench()->getLogger()->logException(new FacadeRuntimeError("Cannot create barcode with type '{$barcodeType}' and value '{$value}'"));
-            return new Response(404);
+            return new Response(404, $this->buildHeadersCommon());
         }
         
-        $headers = [
+        $headers = array_merge($this->buildHeadersCommon(), [
             'Expires' => 0,
             'Cache-Control', 'must-revalidate, post-check=0, pre-check=0',
             'Pragma' => 'public'
-        ];
+        ]);
         
         // See if there are additional parameters 
         $params = [];
@@ -116,7 +116,7 @@ class HttpBarcodeFacade extends AbstractHttpFacade
                     break;
                 default:
                     $this->getWorkbench()->getLogger()->logException(new FacadeRuntimeError("Cannot create barcode with format '{$format}'"));
-                    return new Response(404);
+                    return new Response(404, $this->buildHeadersCommon());
             unset ($params['f']);
             }              
         } else {

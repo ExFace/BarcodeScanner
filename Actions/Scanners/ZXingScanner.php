@@ -109,6 +109,7 @@ JS;
         case ($facade->is('exface.UI5Facade.UI5Facade')):
             $controller = $input_element->getController();
             $controller->addOnShowViewScript($initJS);
+            $js = '';
             break;
             
             // Regular jQuery facades

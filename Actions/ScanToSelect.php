@@ -87,12 +87,15 @@ class ScanToSelect extends AbstractScanAction
         }
         
         $col = $inputElement->getWidget()->getColumnByAttributeAlias($this->getScancodeAttributeAlias());
-        return "
+        // TODO switch to select widget function here to be truly facade agnostic. 
+        // But how to pass the scannedString JS value to the function?
+        // And what to do if the barcode was not found? Add another function argument?
+        // {$inputElement->buildJsCallFunction(Data::FUNCTION_SELECT, ['scannedString', $col->getDataColumnName(), true])}
+        return <<<JS
 
                     var scannedString = " . $js_var_barcode . ";
-                    {$inputElement->buildJsSelectRowByValue($col, 'scannedString', $inputElement->buildJsShowMessageError("'Barcode \"' + scannedString + '\" not found!'"))}
-
-";
+                    {$inputElement->buildJsSelectRowByValue('scannedString', $col->getDataColumnName(), false, $inputElement->buildJsShowMessageError("'Barcode \"' + scannedString + '\" not found!'"))}
+JS;
             
     }
 }

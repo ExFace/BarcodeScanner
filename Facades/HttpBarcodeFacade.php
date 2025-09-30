@@ -47,7 +47,7 @@ class HttpBarcodeFacade extends AbstractHttpFacade
         require_once $this->getWorkbench()->getInstallationPath()
             . DIRECTORY_SEPARATOR . 'vendor'
             . DIRECTORY_SEPARATOR . 'exface'
-            . DIRECTORY_SEPARATOR . 'barcodeScanner'
+            . DIRECTORY_SEPARATOR . 'BarcodeScanner'
             . DIRECTORY_SEPARATOR . 'CommonLogic'
             . DIRECTORY_SEPARATOR . 'barcode.php';
     }

@@ -11,7 +11,7 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/exface/BarcodeScanner/issues",
+        "issues": "https://github.com/exface/barcodescanner/issues",
         "source": "https://github.com/exface/BarcodeScanner"
     },
     "require": {

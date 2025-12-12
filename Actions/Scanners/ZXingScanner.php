@@ -37,7 +37,7 @@ class ZXingScanner extends AbstractJsScanner
      */
     public function getIncludes(FacadeInterface $facade): array
     {
-        $path = "exface/Core/Facades/AbstractAjaxFacade/js/camera";
+        $path = "exface/core/Facades/AbstractAjaxFacade/js/camera";
         $config = $this->getScanAction()->getWorkbench()->getApp('exface.BarcodeScanner')->getConfig();
         $includes = [];
         $includes[] = $facade->buildUrlToVendorFile($path . '/camera.js');

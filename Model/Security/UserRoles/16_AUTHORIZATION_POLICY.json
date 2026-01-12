@@ -98,7 +98,7 @@
             "CONDITION_UXON": null,
             "TARGET_ACTION_MODEL": null,
             "TARGET_ACTION_PROTOTYPE": "",
-            "TARGET_FACADE": "exface/BarcodeScanner/Facades/HttpBarcodeFacade.php",
+            "TARGET_FACADE": "exface/barcodescanner/Facades/HttpBarcodeFacade.php",
             "TARGET_APP": null
         }
     ],

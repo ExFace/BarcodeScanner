@@ -5,7 +5,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use exface\Core\Facades\AbstractHttpFacade\AbstractHttpFacade;
 use exface\Core\DataTypes\StringDataType;
-use Intervention\Image\ImageManager;
 use GuzzleHttp\Psr7\Response;
 use exface\BarcodeScanner\DataTypes\BarcodeDataType;
 use exface\Core\Exceptions\Facades\FacadeRuntimeError;

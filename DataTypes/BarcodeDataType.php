@@ -52,4 +52,10 @@ class BarcodeDataType extends AbstractDataType implements EnumDataTypeInterface
         }
         return $this->labels;
     }
+    
+    public static function generateBarcodeImage(string $type, string $value, int $size = 200, string $format = 'png'): string
+    {
+        $barcode = new \barcode_generator();
+        return $barcode->render_svg($type, $value, ['w' => $size, 'h' => $size, 'f' => $format]);
+    }
 }

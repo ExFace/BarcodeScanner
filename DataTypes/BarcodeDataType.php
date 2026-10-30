@@ -53,8 +53,19 @@ class BarcodeDataType extends AbstractDataType implements EnumDataTypeInterface
         return $this->labels;
     }
     
+    /**
+     * Renders a barcode locally, so callers like the TOTP QR code provider do not need to know about barcode.php.
+     * 
+     * @param string $type
+     * @param string $value
+     * @param int $size
+     * @param string $format
+     * @return string
+     */
     public static function generateBarcodeImage(string $type, string $value, int $size = 200, string $format = 'png'): string
     {
+        // barcode.php declares a global class, that PSR-4 autoloading cannot find
+        require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'CommonLogic' . DIRECTORY_SEPARATOR . 'barcode.php';
         $barcode = new \barcode_generator();
         return $barcode->render_svg($type, $value, ['w' => $size, 'h' => $size, 'f' => $format]);
     }

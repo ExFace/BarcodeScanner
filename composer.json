@@ -10,9 +10,14 @@
             "role": "Creator"
         }
     ],
+    "license": [
+        "GPL-3.0+",
+        "proprietary"
+    ],
     "support": {
-        "issues": "https://github.com/exface/barcodescanner/issues",
-        "source": "https://github.com/exface/BarcodeScanner"
+        "source": "https://github.com/exface/barcodescanner",
+        "docs": "https://github.com/exface/barcodescanner/blob/1.x-dev/Docs",
+        "issues": "https://github.com/exface/barcodescanner/issues"
     },
     "require": {
         "exface/core": "^1.0",
